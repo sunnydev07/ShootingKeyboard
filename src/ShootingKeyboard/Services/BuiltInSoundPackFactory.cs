@@ -18,23 +18,40 @@ public static class BuiltInSoundPackFactory
         {
             Directory.CreateDirectory(packsRootDir);
 
+            // 1. Warzone
             var warzoneDir = Path.Combine(packsRootDir, "Warzone");
             if (!File.Exists(Path.Combine(warzoneDir, "pack.json")))
-            {
                 GenerateWarzonePack(warzoneDir);
-            }
 
+            // 2. Tactical Pistol
+            var pistolDir = Path.Combine(packsRootDir, "Pistol");
+            if (!File.Exists(Path.Combine(pistolDir, "pack.json")))
+                GeneratePistolPack(pistolDir);
+
+            // 3. Assault Rifle
+            var rifleDir = Path.Combine(packsRootDir, "AssaultRifle");
+            if (!File.Exists(Path.Combine(rifleDir, "pack.json")))
+                GenerateRiflePack(rifleDir);
+
+            // 4. Heavy Shotguns & Sniper
+            var heavyDir = Path.Combine(packsRootDir, "HeavyGunshot");
+            if (!File.Exists(Path.Combine(heavyDir, "pack.json")))
+                GenerateHeavyGunshotPack(heavyDir);
+
+            // 5. Mechanical Keyboard (Thock & Clicky)
+            var mechDir = Path.Combine(packsRootDir, "MechanicalKeyboard");
+            if (!File.Exists(Path.Combine(mechDir, "pack.json")))
+                GenerateMechanicalKeyboardPack(mechDir);
+
+            // 6. Sci-Fi
             var scifiDir = Path.Combine(packsRootDir, "SciFi");
             if (!File.Exists(Path.Combine(scifiDir, "pack.json")))
-            {
                 GenerateSciFiPack(scifiDir);
-            }
 
+            // 7. Retro Arcade
             var retroDir = Path.Combine(packsRootDir, "RetroArcade");
             if (!File.Exists(Path.Combine(retroDir, "pack.json")))
-            {
                 GenerateRetroArcadePack(retroDir);
-            }
         }
         catch (Exception ex)
         {
@@ -42,7 +59,153 @@ public static class BuiltInSoundPackFactory
         }
     }
 
-    private static void GenerateWarzonePack(string outDir)
+    #region Pack Generators
+
+    public static void GeneratePistolPack(string outDir)
+    {
+        Directory.CreateDirectory(outDir);
+
+        WriteWavFile(Path.Combine(outDir, "pistol_default.wav"), SynthesizePistol(750, 140, 0.16f, 0.55f));
+        WriteWavFile(Path.Combine(outDir, "pistol_space.wav"), SynthesizePistol(480, 80, 0.28f, 0.70f, true));
+        WriteWavFile(Path.Combine(outDir, "pistol_enter.wav"), SynthesizeExplosion(0.55f));
+        WriteWavFile(Path.Combine(outDir, "pistol_wasd.wav"), SynthesizePistol(820, 160, 0.12f, 0.45f));
+        WriteWavFile(Path.Combine(outDir, "pistol_combo1.wav"), SynthesizePistol(850, 130, 0.18f, 0.50f));
+        WriteWavFile(Path.Combine(outDir, "pistol_combo2.wav"), SynthesizePistol(920, 110, 0.22f, 0.60f));
+        WriteWavFile(Path.Combine(outDir, "pistol_combo3.wav"), SynthesizePistol(520, 85, 0.26f, 0.75f, true));
+        WriteWavFile(Path.Combine(outDir, "pistol_combo4.wav"), SynthesizePistol(1000, 70, 0.32f, 0.80f, true));
+
+        var pack = new SoundPack
+        {
+            Id = "pistol",
+            Name = "Tactical Pistol",
+            Author = "ShootingKeyboard",
+            Description = "Crisp 9mm semi-auto handgun shots, .50 Desert Eagle blasts, and tactical sidearm fire.",
+            Defaults = new PackDefaults { Volume = 0.85f, ComboWindowMs = 380 },
+            Sounds = new()
+            {
+                new SoundEntry { Id = "pistol_default", DisplayName = "9mm Pistol Shot", File = "pistol_default.wav", Volume = 1.0f },
+                new SoundEntry { Id = "pistol_space", DisplayName = ".50 Desert Eagle Hand Cannon", File = "pistol_space.wav", Group = KeyGroups.Space, Volume = 1.0f },
+                new SoundEntry { Id = "pistol_enter", DisplayName = "Tactical Flashbang Breach", File = "pistol_enter.wav", Group = KeyGroups.Enter, Volume = 1.0f },
+                new SoundEntry { Id = "pistol_wasd", DisplayName = "Suppressed Tactical Tap", File = "pistol_wasd.wav", Group = KeyGroups.WASD, Volume = 0.9f },
+                new SoundEntry { Id = "pistol_combo1", DisplayName = "Double Tap (Tier 1)", File = "pistol_combo1.wav", IsComboVariant = true, ComboTier = 1 },
+                new SoundEntry { Id = "pistol_combo2", DisplayName = "Revolver Fan-Fire (Tier 2)", File = "pistol_combo2.wav", IsComboVariant = true, ComboTier = 2 },
+                new SoundEntry { Id = "pistol_combo3", DisplayName = "Magnum Rapid Fire (Tier 3)", File = "pistol_combo3.wav", IsComboVariant = true, ComboTier = 3 },
+                new SoundEntry { Id = "pistol_combo4", DisplayName = "Akimbo Pistol Frenzy (Tier 4)", File = "pistol_combo4.wav", IsComboVariant = true, ComboTier = 4 }
+            }
+        };
+
+        File.WriteAllText(Path.Combine(outDir, "pack.json"), JsonSerializer.Serialize(pack, new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    public static void GenerateRiflePack(string outDir)
+    {
+        Directory.CreateDirectory(outDir);
+
+        WriteWavFile(Path.Combine(outDir, "rifle_default.wav"), SynthesizeRifle(620, 110, 0.19f, 0.60f));
+        WriteWavFile(Path.Combine(outDir, "rifle_space.wav"), SynthesizeRifle(420, 70, 0.32f, 0.75f, true));
+        WriteWavFile(Path.Combine(outDir, "rifle_enter.wav"), SynthesizeExplosion(0.70f));
+        WriteWavFile(Path.Combine(outDir, "rifle_wasd.wav"), SynthesizeRifle(700, 130, 0.15f, 0.55f));
+        WriteWavFile(Path.Combine(outDir, "rifle_combo1.wav"), SynthesizeRifle(680, 100, 0.22f, 0.65f));
+        WriteWavFile(Path.Combine(outDir, "rifle_combo2.wav"), SynthesizeRifle(750, 90, 0.25f, 0.70f));
+        WriteWavFile(Path.Combine(outDir, "rifle_combo3.wav"), SynthesizeRifle(820, 75, 0.28f, 0.75f, true));
+        WriteWavFile(Path.Combine(outDir, "rifle_combo4.wav"), SynthesizeExplosion(0.90f));
+
+        var pack = new SoundPack
+        {
+            Id = "assault-rifle",
+            Name = "Assault Rifle",
+            Author = "ShootingKeyboard",
+            Description = "5.56mm and 7.62mm military assault rifles, rapid bursts, and heavy battle rifle gunfire.",
+            Defaults = new PackDefaults { Volume = 0.85f, ComboWindowMs = 380 },
+            Sounds = new()
+            {
+                new SoundEntry { Id = "rifle_default", DisplayName = "5.56mm M4A1 Round", File = "rifle_default.wav", Volume = 1.0f },
+                new SoundEntry { Id = "rifle_space", DisplayName = "7.62mm AK-47 Heavy Shot", File = "rifle_space.wav", Group = KeyGroups.Space, Volume = 1.0f },
+                new SoundEntry { Id = "rifle_enter", DisplayName = "40mm Grenade Launcher", File = "rifle_enter.wav", Group = KeyGroups.Enter, Volume = 1.0f },
+                new SoundEntry { Id = "rifle_wasd", DisplayName = "3-Round Burst Fire", File = "rifle_wasd.wav", Group = KeyGroups.WASD, Volume = 0.9f },
+                new SoundEntry { Id = "rifle_combo1", DisplayName = "Tactical Burst (Tier 1)", File = "rifle_combo1.wav", IsComboVariant = true, ComboTier = 1 },
+                new SoundEntry { Id = "rifle_combo2", DisplayName = "Sustained Fire (Tier 2)", File = "rifle_combo2.wav", IsComboVariant = true, ComboTier = 2 },
+                new SoundEntry { Id = "rifle_combo3", DisplayName = "Heavy Battle Rifle (Tier 3)", File = "rifle_combo3.wav", IsComboVariant = true, ComboTier = 3 },
+                new SoundEntry { Id = "rifle_combo4", DisplayName = "Minigun Barrage (Tier 4)", File = "rifle_combo4.wav", IsComboVariant = true, ComboTier = 4 }
+            }
+        };
+
+        File.WriteAllText(Path.Combine(outDir, "pack.json"), JsonSerializer.Serialize(pack, new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    public static void GenerateHeavyGunshotPack(string outDir)
+    {
+        Directory.CreateDirectory(outDir);
+
+        WriteWavFile(Path.Combine(outDir, "heavy_default.wav"), SynthesizeHeavyShotgun(0.32f));
+        WriteWavFile(Path.Combine(outDir, "heavy_space.wav"), SynthesizeHeavyShotgun(0.45f, true));
+        WriteWavFile(Path.Combine(outDir, "heavy_enter.wav"), SynthesizeExplosion(0.85f));
+        WriteWavFile(Path.Combine(outDir, "heavy_wasd.wav"), SynthesizeGunshot(420, 65, 0.22f, 0.70f));
+        WriteWavFile(Path.Combine(outDir, "heavy_combo1.wav"), SynthesizeHeavyShotgun(0.34f));
+        WriteWavFile(Path.Combine(outDir, "heavy_combo2.wav"), SynthesizeGunshot(350, 40, 0.38f, 0.85f));
+        WriteWavFile(Path.Combine(outDir, "heavy_combo3.wav"), SynthesizeHeavyShotgun(0.42f, true));
+        WriteWavFile(Path.Combine(outDir, "heavy_combo4.wav"), SynthesizeExplosion(1.05f));
+
+        var pack = new SoundPack
+        {
+            Id = "heavy-gunshot",
+            Name = "Heavy Gunshot & Shotguns",
+            Author = "ShootingKeyboard",
+            Description = "High-impact 12-gauge pump action shotguns, .50 Cal sniper rifles, and explosive ballistic detonations.",
+            Defaults = new PackDefaults { Volume = 0.85f, ComboWindowMs = 420 },
+            Sounds = new()
+            {
+                new SoundEntry { Id = "heavy_default", DisplayName = "12-Gauge Pump Shotgun", File = "heavy_default.wav", Volume = 1.0f },
+                new SoundEntry { Id = "heavy_space", DisplayName = "Double-Barrel Elephant Gun", File = "heavy_space.wav", Group = KeyGroups.Space, Volume = 1.0f },
+                new SoundEntry { Id = "heavy_enter", DisplayName = "C4 Explosive Breach", File = "heavy_enter.wav", Group = KeyGroups.Enter, Volume = 1.0f },
+                new SoundEntry { Id = "heavy_wasd", DisplayName = "Combat Shotgun Slug", File = "heavy_wasd.wav", Group = KeyGroups.WASD, Volume = 0.9f },
+                new SoundEntry { Id = "heavy_combo1", DisplayName = "Dual Shotgun Blast (Tier 1)", File = "heavy_combo1.wav", IsComboVariant = true, ComboTier = 1 },
+                new SoundEntry { Id = "heavy_combo2", DisplayName = "Barrett .50 Sniper (Tier 2)", File = "heavy_combo2.wav", IsComboVariant = true, ComboTier = 2 },
+                new SoundEntry { Id = "heavy_combo3", DisplayName = "AA-12 Drum Barrage (Tier 3)", File = "heavy_combo3.wav", IsComboVariant = true, ComboTier = 3 },
+                new SoundEntry { Id = "heavy_combo4", DisplayName = "105mm Artillery Strike (Tier 4)", File = "heavy_combo4.wav", IsComboVariant = true, ComboTier = 4 }
+            }
+        };
+
+        File.WriteAllText(Path.Combine(outDir, "pack.json"), JsonSerializer.Serialize(pack, new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    public static void GenerateMechanicalKeyboardPack(string outDir)
+    {
+        Directory.CreateDirectory(outDir);
+
+        WriteWavFile(Path.Combine(outDir, "mech_default.wav"), SynthesizeMechSwitch(2800, 520, 0.08f));
+        WriteWavFile(Path.Combine(outDir, "mech_space.wav"), SynthesizeMechSpacebar(160, 0.14f));
+        WriteWavFile(Path.Combine(outDir, "mech_enter.wav"), SynthesizeMechSwitch(2200, 380, 0.11f, true));
+        WriteWavFile(Path.Combine(outDir, "mech_wasd.wav"), SynthesizeMechSwitch(3100, 600, 0.06f));
+        WriteWavFile(Path.Combine(outDir, "mech_combo1.wav"), SynthesizeMechSwitch(3000, 540, 0.09f));
+        WriteWavFile(Path.Combine(outDir, "mech_combo2.wav"), SynthesizeMechSwitch(3300, 580, 0.10f));
+        WriteWavFile(Path.Combine(outDir, "mech_combo3.wav"), SynthesizeMechSwitch(3600, 620, 0.12f, true));
+        WriteWavFile(Path.Combine(outDir, "mech_combo4.wav"), SynthesizeMechSpacebar(130, 0.18f));
+
+        var pack = new SoundPack
+        {
+            Id = "mechanical-keyboard",
+            Name = "Mechanical Keyboard (Thock & Clicky)",
+            Author = "ShootingKeyboard",
+            Description = "Satisfying tactile switch clicks, lubricated deep spacebar thocks, and crisp bottom-out clacks.",
+            Defaults = new PackDefaults { Volume = 0.90f, ComboWindowMs = 350 },
+            Sounds = new()
+            {
+                new SoundEntry { Id = "mech_default", DisplayName = "Tactical Switch Click & Clack", File = "mech_default.wav", Volume = 1.0f },
+                new SoundEntry { Id = "mech_space", DisplayName = "Stabilized Spacebar Thock", File = "mech_space.wav", Group = KeyGroups.Space, Volume = 1.0f },
+                new SoundEntry { Id = "mech_enter", DisplayName = "Return Key Heavy Clack", File = "mech_enter.wav", Group = KeyGroups.Enter, Volume = 1.0f },
+                new SoundEntry { Id = "mech_wasd", DisplayName = "Linear Gaming Switch Tap", File = "mech_wasd.wav", Group = KeyGroups.WASD, Volume = 0.9f },
+                new SoundEntry { Id = "mech_combo1", DisplayName = "Fast Typing Rhythm (Tier 1)", File = "mech_combo1.wav", IsComboVariant = true, ComboTier = 1 },
+                new SoundEntry { Id = "mech_combo2", DisplayName = "Rapid Clack Cascade (Tier 2)", File = "mech_combo2.wav", IsComboVariant = true, ComboTier = 2 },
+                new SoundEntry { Id = "mech_combo3", DisplayName = "120 WPM Flurry (Tier 3)", File = "mech_combo3.wav", IsComboVariant = true, ComboTier = 3 },
+                new SoundEntry { Id = "mech_combo4", DisplayName = "Mechanical Symphony (Tier 4)", File = "mech_combo4.wav", IsComboVariant = true, ComboTier = 4 }
+            }
+        };
+
+        File.WriteAllText(Path.Combine(outDir, "pack.json"), JsonSerializer.Serialize(pack, new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    public static void GenerateWarzonePack(string outDir)
     {
         Directory.CreateDirectory(outDir);
 
@@ -78,7 +241,7 @@ public static class BuiltInSoundPackFactory
         File.WriteAllText(Path.Combine(outDir, "pack.json"), JsonSerializer.Serialize(pack, new JsonSerializerOptions { WriteIndented = true }));
     }
 
-    private static void GenerateSciFiPack(string outDir)
+    public static void GenerateSciFiPack(string outDir)
     {
         Directory.CreateDirectory(outDir);
 
@@ -114,7 +277,7 @@ public static class BuiltInSoundPackFactory
         File.WriteAllText(Path.Combine(outDir, "pack.json"), JsonSerializer.Serialize(pack, new JsonSerializerOptions { WriteIndented = true }));
     }
 
-    private static void GenerateRetroArcadePack(string outDir)
+    public static void GenerateRetroArcadePack(string outDir)
     {
         Directory.CreateDirectory(outDir);
 
@@ -150,7 +313,150 @@ public static class BuiltInSoundPackFactory
         File.WriteAllText(Path.Combine(outDir, "pack.json"), JsonSerializer.Serialize(pack, new JsonSerializerOptions { WriteIndented = true }));
     }
 
-    #region Audio Synthesis
+    #endregion
+
+    #region Audio Synthesis Algorithms
+
+    private static float[] SynthesizePistol(float freqStart, float freqEnd, float durationSec, float noiseMix, bool isHeavy = false)
+    {
+        var numSamples = (int)(SampleRate * durationSec);
+        var samples = new float[numSamples];
+        var rand = new Random(55);
+
+        double phase = 0;
+        for (int i = 0; i < numSamples; i++)
+        {
+            var t = (float)i / numSamples;
+            var currentFreq = freqStart * Math.Pow(freqEnd / freqStart, t * 1.6);
+            phase += 2.0 * Math.PI * currentFreq / SampleRate;
+
+            var sine = (float)Math.Sin(phase);
+            var noise = (float)(rand.NextDouble() * 2.0 - 1.0);
+
+            // Fast metallic click transient at start (slide recoil)
+            var click = (float)(Math.Sin(2.0 * Math.PI * 2400.0 * i / SampleRate) * Math.Exp(-t * 80.0));
+
+            var env = (float)Math.Exp(-t * (isHeavy ? 10.0 : 16.0));
+            var mixed = (sine * (1.0f - noiseMix) + noise * noiseMix + click * 0.35f) * env;
+
+            samples[i] = Math.Clamp(mixed * 0.95f, -1.0f, 1.0f);
+        }
+
+        return samples;
+    }
+
+    private static float[] SynthesizeRifle(float freqStart, float freqEnd, float durationSec, float noiseMix, bool isHeavy = false)
+    {
+        var numSamples = (int)(SampleRate * durationSec);
+        var samples = new float[numSamples];
+        var rand = new Random(88);
+
+        double phase = 0;
+        for (int i = 0; i < numSamples; i++)
+        {
+            var t = (float)i / numSamples;
+            var currentFreq = freqStart * Math.Pow(freqEnd / freqStart, t * 1.3);
+            phase += 2.0 * Math.PI * currentFreq / SampleRate;
+
+            var sine = (float)Math.Sin(phase);
+            var noise = (float)(rand.NextDouble() * 2.0 - 1.0);
+
+            // Supersonic ballistic crack + metallic chamber resonance
+            var crack = (float)(Math.Sin(2.0 * Math.PI * 3400.0 * i / SampleRate) * Math.Exp(-t * 60.0));
+
+            var env = (float)Math.Exp(-t * (isHeavy ? 9.0 : 13.0));
+            var mixed = (sine * (1.0f - noiseMix) + noise * noiseMix + crack * 0.4f) * env;
+
+            samples[i] = Math.Clamp(mixed * 0.95f, -1.0f, 1.0f);
+        }
+
+        return samples;
+    }
+
+    private static float[] SynthesizeHeavyShotgun(float durationSec, bool isDoubleBarrel = false)
+    {
+        var numSamples = (int)(SampleRate * durationSec);
+        var samples = new float[numSamples];
+        var rand = new Random(123);
+
+        double rumblePhase = 0;
+        for (int i = 0; i < numSamples; i++)
+        {
+            var t = (float)i / numSamples;
+            rumblePhase += 2.0 * Math.PI * (50.0 * (1.0 - t * 0.3)) / SampleRate;
+
+            var rumble = (float)Math.Sin(rumblePhase);
+            var noise = (float)(rand.NextDouble() * 2.0 - 1.0);
+
+            // Dual blast impact wave
+            var secondBlast = isDoubleBarrel && t > 0.06f ? (float)(rand.NextDouble() * 1.5 - 0.75) * (float)Math.Exp(-(t - 0.06f) * 12.0) : 0f;
+
+            var env = (float)Math.Exp(-t * 7.0);
+            var mixed = (rumble * 0.4f + noise * 0.6f + secondBlast) * env;
+
+            samples[i] = Math.Clamp(mixed * 0.95f, -1.0f, 1.0f);
+        }
+
+        return samples;
+    }
+
+    private static float[] SynthesizeMechSwitch(float clickFreq, float bottomOutFreq, float durationSec, bool heavy = false)
+    {
+        var numSamples = (int)(SampleRate * durationSec);
+        var samples = new float[numSamples];
+        var rand = new Random(33);
+
+        for (int i = 0; i < numSamples; i++)
+        {
+            var t = (float)i / numSamples;
+
+            // 1. Tactile click leaf (high frequency snap at t=0)
+            var click = (float)(Math.Sin(2.0 * Math.PI * clickFreq * i / SampleRate) * Math.Exp(-t * 90.0));
+
+            // 2. Bottom-out plastic clack (lower resonant frequency at t=0.015)
+            var bottomOutTime = heavy ? 0.012f : 0.018f;
+            var bottomOut = t >= bottomOutTime
+                ? (float)(Math.Sin(2.0 * Math.PI * bottomOutFreq * (i - bottomOutTime * SampleRate) / SampleRate) * Math.Exp(-(t - bottomOutTime) * 35.0))
+                : 0f;
+
+            // 3. Acoustic switch housing texture (subtle white noise impact)
+            var noise = (float)(rand.NextDouble() * 2.0 - 1.0) * (float)Math.Exp(-t * 45.0);
+
+            var mixed = click * 0.5f + bottomOut * 0.65f + noise * 0.25f;
+            samples[i] = Math.Clamp(mixed * 0.95f, -1.0f, 1.0f);
+        }
+
+        return samples;
+    }
+
+    private static float[] SynthesizeMechSpacebar(float baseThumpFreq, float durationSec)
+    {
+        var numSamples = (int)(SampleRate * durationSec);
+        var samples = new float[numSamples];
+        var rand = new Random(66);
+
+        double phase = 0;
+        for (int i = 0; i < numSamples; i++)
+        {
+            var t = (float)i / numSamples;
+            phase += 2.0 * Math.PI * (baseThumpFreq * (1.0 - t * 0.2)) / SampleRate;
+
+            // Deep thocky housing resonance
+            var thump = (float)Math.Sin(phase);
+            var harmonic = (float)(Math.Sin(phase * 2.0) * 0.3);
+
+            // Stabilizer wire wire-clack
+            var wireClick = (float)(Math.Sin(2.0 * Math.PI * 1800.0 * i / SampleRate) * Math.Exp(-t * 70.0));
+            var noise = (float)(rand.NextDouble() * 2.0 - 1.0) * (float)Math.Exp(-t * 30.0);
+
+            var env = (float)Math.Exp(-t * 14.0);
+            var mixed = ((thump + harmonic) * 0.65f + wireClick * 0.35f + noise * 0.2f) * env;
+
+            samples[i] = Math.Clamp(mixed * 0.95f, -1.0f, 1.0f);
+        }
+
+        return samples;
+    }
 
     private static float[] SynthesizeGunshot(float freqStart, float freqEnd, float durationSec, float noiseMix)
     {

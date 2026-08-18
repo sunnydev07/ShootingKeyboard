@@ -1,0 +1,84 @@
+{
+  "id": "heavy-gunshot",
+  "name": "Heavy Gunshot \u0026 Shotguns",
+  "author": "ShootingKeyboard",
+  "description": "High-impact 12-gauge pump action shotguns, .50 Cal sniper rifles, and explosive ballistic detonations.",
+  "sounds": [
+    {
+      "id": "heavy_default",
+      "file": "heavy_default.wav",
+      "displayName": "12-Gauge Pump Shotgun",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "heavy_space",
+      "file": "heavy_space.wav",
+      "displayName": "Double-Barrel Elephant Gun",
+      "group": "Space",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "heavy_enter",
+      "file": "heavy_enter.wav",
+      "displayName": "C4 Explosive Breach",
+      "group": "Enter",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "heavy_wasd",
+      "file": "heavy_wasd.wav",
+      "displayName": "Combat Shotgun Slug",
+      "group": "WASD",
+      "volume": 0.9,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "heavy_combo1",
+      "file": "heavy_combo1.wav",
+      "displayName": "Dual Shotgun Blast (Tier 1)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 1
+    },
+    {
+      "id": "heavy_combo2",
+      "file": "heavy_combo2.wav",
+      "displayName": "Barrett .50 Sniper (Tier 2)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 2
+    },
+    {
+      "id": "heavy_combo3",
+      "file": "heavy_combo3.wav",
+      "displayName": "AA-12 Drum Barrage (Tier 3)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 3
+    },
+    {
+      "id": "heavy_combo4",
+      "file": "heavy_combo4.wav",
+      "displayName": "105mm Artillery Strike (Tier 4)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 4
+    }
+  ],
+  "defaults": {
+    "volume": 0.85,
+    "comboWindowMs": 420
+  }
+}

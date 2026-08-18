@@ -1,0 +1,84 @@
+{
+  "id": "assault-rifle",
+  "name": "Assault Rifle",
+  "author": "ShootingKeyboard",
+  "description": "5.56mm and 7.62mm military assault rifles, rapid bursts, and heavy battle rifle gunfire.",
+  "sounds": [
+    {
+      "id": "rifle_default",
+      "file": "rifle_default.wav",
+      "displayName": "5.56mm M4A1 Round",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "rifle_space",
+      "file": "rifle_space.wav",
+      "displayName": "7.62mm AK-47 Heavy Shot",
+      "group": "Space",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "rifle_enter",
+      "file": "rifle_enter.wav",
+      "displayName": "40mm Grenade Launcher",
+      "group": "Enter",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "rifle_wasd",
+      "file": "rifle_wasd.wav",
+      "displayName": "3-Round Burst Fire",
+      "group": "WASD",
+      "volume": 0.9,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "rifle_combo1",
+      "file": "rifle_combo1.wav",
+      "displayName": "Tactical Burst (Tier 1)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 1
+    },
+    {
+      "id": "rifle_combo2",
+      "file": "rifle_combo2.wav",
+      "displayName": "Sustained Fire (Tier 2)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 2
+    },
+    {
+      "id": "rifle_combo3",
+      "file": "rifle_combo3.wav",
+      "displayName": "Heavy Battle Rifle (Tier 3)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 3
+    },
+    {
+      "id": "rifle_combo4",
+      "file": "rifle_combo4.wav",
+      "displayName": "Minigun Barrage (Tier 4)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 4
+    }
+  ],
+  "defaults": {
+    "volume": 0.85,
+    "comboWindowMs": 380
+  }
+}

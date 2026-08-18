@@ -1,0 +1,84 @@
+{
+  "id": "mechanical-keyboard",
+  "name": "Mechanical Keyboard (Thock \u0026 Clicky)",
+  "author": "ShootingKeyboard",
+  "description": "Satisfying tactile switch clicks, lubricated deep spacebar thocks, and crisp bottom-out clacks.",
+  "sounds": [
+    {
+      "id": "mech_default",
+      "file": "mech_default.wav",
+      "displayName": "Tactical Switch Click \u0026 Clack",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "mech_space",
+      "file": "mech_space.wav",
+      "displayName": "Stabilized Spacebar Thock",
+      "group": "Space",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "mech_enter",
+      "file": "mech_enter.wav",
+      "displayName": "Return Key Heavy Clack",
+      "group": "Enter",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "mech_wasd",
+      "file": "mech_wasd.wav",
+      "displayName": "Linear Gaming Switch Tap",
+      "group": "WASD",
+      "volume": 0.9,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "mech_combo1",
+      "file": "mech_combo1.wav",
+      "displayName": "Fast Typing Rhythm (Tier 1)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 1
+    },
+    {
+      "id": "mech_combo2",
+      "file": "mech_combo2.wav",
+      "displayName": "Rapid Clack Cascade (Tier 2)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 2
+    },
+    {
+      "id": "mech_combo3",
+      "file": "mech_combo3.wav",
+      "displayName": "120 WPM Flurry (Tier 3)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 3
+    },
+    {
+      "id": "mech_combo4",
+      "file": "mech_combo4.wav",
+      "displayName": "Mechanical Symphony (Tier 4)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 4
+    }
+  ],
+  "defaults": {
+    "volume": 0.9,
+    "comboWindowMs": 350
+  }
+}

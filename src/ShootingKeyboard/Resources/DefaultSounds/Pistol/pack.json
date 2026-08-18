@@ -1,0 +1,84 @@
+{
+  "id": "pistol",
+  "name": "Tactical Pistol",
+  "author": "ShootingKeyboard",
+  "description": "Crisp 9mm semi-auto handgun shots, .50 Desert Eagle blasts, and tactical sidearm fire.",
+  "sounds": [
+    {
+      "id": "pistol_default",
+      "file": "pistol_default.wav",
+      "displayName": "9mm Pistol Shot",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "pistol_space",
+      "file": "pistol_space.wav",
+      "displayName": ".50 Desert Eagle Hand Cannon",
+      "group": "Space",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "pistol_enter",
+      "file": "pistol_enter.wav",
+      "displayName": "Tactical Flashbang Breach",
+      "group": "Enter",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "pistol_wasd",
+      "file": "pistol_wasd.wav",
+      "displayName": "Suppressed Tactical Tap",
+      "group": "WASD",
+      "volume": 0.9,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "pistol_combo1",
+      "file": "pistol_combo1.wav",
+      "displayName": "Double Tap (Tier 1)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 1
+    },
+    {
+      "id": "pistol_combo2",
+      "file": "pistol_combo2.wav",
+      "displayName": "Revolver Fan-Fire (Tier 2)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 2
+    },
+    {
+      "id": "pistol_combo3",
+      "file": "pistol_combo3.wav",
+      "displayName": "Magnum Rapid Fire (Tier 3)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 3
+    },
+    {
+      "id": "pistol_combo4",
+      "file": "pistol_combo4.wav",
+      "displayName": "Akimbo Pistol Frenzy (Tier 4)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 4
+    }
+  ],
+  "defaults": {
+    "volume": 0.85,
+    "comboWindowMs": 380
+  }
+}
