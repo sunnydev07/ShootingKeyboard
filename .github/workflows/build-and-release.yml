@@ -1,0 +1,60 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Run Unit Tests
+      run: dotnet test --configuration Release --no-restore --verbosity normal
+
+    - name: Publish Standalone Executable (win-x64)
+      run: |
+        dotnet publish src/ShootingKeyboard/ShootingKeyboard.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -o dist/ShootingKeyboard-v1.0.0-win-x64
+
+    - name: Package Portable Distribution
+      run: |
+        Copy-Item -Path "sound-packs" -Destination "dist/ShootingKeyboard-v1.0.0-win-x64/sound-packs" -Recurse -Force
+        Copy-Item -Path "docs/USER_GUIDE.md" -Destination "dist/ShootingKeyboard-v1.0.0-win-x64/USER_GUIDE.md" -Force
+        Compress-Archive -Path "dist/ShootingKeyboard-v1.0.0-win-x64/*" -DestinationPath "dist/ShootingKeyboard-v1.0.0-win-x64.zip" -Force
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ShootingKeyboard-v1.0.0-win-x64
+        path: dist/ShootingKeyboard-v1.0.0-win-x64.zip
+
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          dist/ShootingKeyboard-v1.0.0-win-x64/ShootingKeyboard.exe
+          dist/ShootingKeyboard-v1.0.0-win-x64.zip
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

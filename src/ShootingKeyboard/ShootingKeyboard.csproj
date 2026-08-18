@@ -9,6 +9,20 @@
     <ApplicationIcon>Resources\Icons\app.ico</ApplicationIcon>
     <AssemblyName>ShootingKeyboard</AssemblyName>
     <RootNamespace>ShootingKeyboard</RootNamespace>
+    
+    <!-- Package Metadata -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Authors>sunnydev07</Authors>
+    <Company>ShootingKeyboard</Company>
+    <Product>Shooting Keyboard</Product>
+    <Description>High-performance Windows desktop application that plays tactical gunshots, rifles, pistols, mechanical keyboard clicks, and sci-fi sound effects on every keystroke system-wide.</Description>
+    <PackageProjectUrl>https://github.com/sunnydev07/ShootingKeyboard</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sunnydev07/ShootingKeyboard</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <!-- Single File & Publishing -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
