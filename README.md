@@ -6,6 +6,13 @@
   <img src="src/Screenshot/image.png" alt="Shooting Keyboard Preview" width="650" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/sunnydev07/ShootingKeyboard/releases/latest"><img src="https://img.shields.io/github/v/release/sunnydev07/ShootingKeyboard?color=brightgreen&label=Download%20Latest%20v1.0.0" alt="Download Latest Release" /></a>
+  <a href="https://dotnet.microsoft.com/download/dotnet/8.0"><img src="https://img.shields.io/badge/.NET-8.0%20WPF-blueviolet.svg" alt=".NET 8.0 WPF" /></a>
+  <a href="https://github.com/sunnydev07/ShootingKeyboard/blob/main/LICENSE"><img src="https://img.shields.io/badge/Platform-Windows%20x64-0078d4.svg" alt="Windows x64" /></a>
+  <a href="#license"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+</p>
+
 ---
 
 ## Key Features
