@@ -3,7 +3,7 @@
 **Shooting Keyboard** is a high-performance Windows desktop application built with C# (.NET 8 WPF) and NAudio that plays customizable audio effects (gunshots, sci-fi lasers, retro 8-bit chiptunes, explosions) for every keystroke system-wide with imperceptible audio latency (<15ms).
 
 <p align="center">
-  <img src="src/Screenshot/image.png" alt="Shooting Keyboard Preview" width="100%" />
+  <img src="src/Screenshot/image.png" alt="Shooting Keyboard Preview" width="650" />
 </p>
 
 ---
