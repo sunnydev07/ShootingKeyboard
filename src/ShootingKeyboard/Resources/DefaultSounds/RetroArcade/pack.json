@@ -1,0 +1,84 @@
+{
+  "id": "retro-arcade",
+  "name": "Retro Arcade",
+  "author": "ShootingKeyboard",
+  "description": "Nostalgic 8-bit chiptune blips, jumps, coins, and arcade sound effects.",
+  "sounds": [
+    {
+      "id": "blip_default",
+      "file": "blip_default.wav",
+      "displayName": "8-Bit Key Blip",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "blip_space",
+      "file": "blip_space.wav",
+      "displayName": "8-Bit Jump",
+      "group": "Space",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "blip_enter",
+      "file": "blip_enter.wav",
+      "displayName": "8-Bit Crash Explosion",
+      "group": "Enter",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "blip_wasd",
+      "file": "blip_wasd.wav",
+      "displayName": "8-Bit Step Chirp",
+      "group": "WASD",
+      "volume": 0.9,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "blip_combo1",
+      "file": "blip_combo1.wav",
+      "displayName": "Coin Collect (Tier 1)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 1
+    },
+    {
+      "id": "blip_combo2",
+      "file": "blip_combo2.wav",
+      "displayName": "Power-Up (Tier 2)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 2
+    },
+    {
+      "id": "blip_combo3",
+      "file": "blip_combo3.wav",
+      "displayName": "1-UP Fanfare (Tier 3)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 3
+    },
+    {
+      "id": "blip_combo4",
+      "file": "blip_combo4.wav",
+      "displayName": "Boss Defeated (Tier 4)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 4
+    }
+  ],
+  "defaults": {
+    "volume": 0.75,
+    "comboWindowMs": 450
+  }
+}

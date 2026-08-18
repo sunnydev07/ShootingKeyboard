@@ -1,0 +1,201 @@
+<Window x:Class="ShootingKeyboard.Views.KeyBindingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:ShootingKeyboard.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewModels:KeyBindingViewModel}"
+        Title="Shooting Keyboard — Key Bindings"
+        Height="580"
+        Width="640"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E222B"
+        Foreground="#ECEFF4"
+        FontFamily="Segoe UI"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#2D3340"/>
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+            <Setter Property="BorderBrush" Value="#4C566A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3B4252"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="#D8DEE9"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,8"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Key-to-Sound Bindings" FontSize="20" FontWeight="Bold" Foreground="#88C0D0"/>
+            <TextBlock Text="Map key groups or specific keys to any sound effect in the active pack" FontSize="12" Foreground="#81A1C1" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Tab Content -->
+        <TabControl Grid.Row="1" Background="#252A34" BorderBrush="#3B4252" Margin="0,0,0,16">
+            <!-- Group Presets Tab -->
+            <TabItem Header="Group Presets">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                    <ItemsControl ItemsSource="{Binding GroupBindings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#1E222B" CornerRadius="4" Padding="10,6" Margin="0,4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="130"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding GroupName}" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="14"/>
+                                        <ComboBox Grid.Column="1"
+                                                  ItemsSource="{Binding AvailableSounds}"
+                                                  SelectedItem="{Binding SelectedSound}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  Height="28"
+                                                  Margin="0,0,8,0"/>
+                                        <Button Grid.Column="2"
+                                                Content="▶"
+                                                ToolTip="Preview Sound"
+                                                Command="{Binding DataContext.PlayPreviewCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding SelectedSound.Id}"
+                                                Width="32"
+                                                Height="28"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Custom Per-Key Bindings Tab -->
+            <TabItem Header="Custom Per-Key Bindings">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Key Capture Toolbar -->
+                    <Border Grid.Row="0" Background="#1E222B" CornerRadius="4" Padding="12" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding CaptureStatusText}"
+                                       VerticalAlignment="Center"
+                                       FontSize="13">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#ECEFF4"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCapturingKey}" Value="True">
+                                                <Setter Property="Foreground" Value="#EBCB8B"/>
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <Button Grid.Column="1"
+                                    Content="Capture Key"
+                                    Command="{Binding StartCaptureCommand}"
+                                    Background="#4C566A"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Key List -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding CustomKeyBindings}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#1E222B" CornerRadius="4" Padding="10,6" Margin="0,4">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="110"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding KeyName}" FontWeight="Bold" Foreground="#88C0D0" VerticalAlignment="Center" FontSize="14"/>
+                                            <ComboBox Grid.Column="1"
+                                                      ItemsSource="{Binding AvailableSounds}"
+                                                      SelectedItem="{Binding SelectedSound}"
+                                                      DisplayMemberPath="DisplayName"
+                                                      Height="28"
+                                                      Margin="0,0,8,0"/>
+                                            <Button Grid.Column="2"
+                                                    Content="▶"
+                                                    ToolTip="Preview Sound"
+                                                    Command="{Binding DataContext.PlayPreviewCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding SelectedSound.Id}"
+                                                    Width="32"
+                                                    Height="28"
+                                                    Margin="0,0,6,0"/>
+                                            <Button Grid.Column="3"
+                                                    Content="✕"
+                                                    ToolTip="Remove Binding"
+                                                    Command="{Binding DataContext.RemoveKeyBindingCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Width="32"
+                                                    Height="28"
+                                                    Background="#BF616A"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" BorderBrush="#3B4252" BorderThickness="0,1,0,0" Padding="0,14,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancel" Click="CancelButton_Click" Margin="0,0,8,0"/>
+                <Button Content="Apply Bindings" Command="{Binding SaveCommand}" Background="#5E81AC" Foreground="White"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

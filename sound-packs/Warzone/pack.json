@@ -1,0 +1,84 @@
+{
+  "id": "warzone",
+  "name": "Warzone",
+  "author": "ShootingKeyboard",
+  "description": "Tactical gunfire, artillery explosions, and military combat sound effects.",
+  "sounds": [
+    {
+      "id": "shot_default",
+      "file": "shot_default.wav",
+      "displayName": "Assault Rifle Shot",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "shot_space",
+      "file": "shot_space.wav",
+      "displayName": "Heavy Shotgun Blast",
+      "group": "Space",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "shot_enter",
+      "file": "shot_enter.wav",
+      "displayName": "Grenade Explosion",
+      "group": "Enter",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "shot_wasd",
+      "file": "shot_wasd.wav",
+      "displayName": "Tactical Burst",
+      "group": "WASD",
+      "volume": 0.9,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "shot_combo1",
+      "file": "shot_combo1.wav",
+      "displayName": "Enhanced Fire (Tier 1)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 1
+    },
+    {
+      "id": "shot_combo2",
+      "file": "shot_combo2.wav",
+      "displayName": "Sniper Fire (Tier 2)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 2
+    },
+    {
+      "id": "shot_combo3",
+      "file": "shot_combo3.wav",
+      "displayName": "Minigun Barrage (Tier 3)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 3
+    },
+    {
+      "id": "shot_combo4",
+      "file": "shot_combo4.wav",
+      "displayName": "Artillery Strike (Tier 4)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 4
+    }
+  ],
+  "defaults": {
+    "volume": 0.85,
+    "comboWindowMs": 400
+  }
+}

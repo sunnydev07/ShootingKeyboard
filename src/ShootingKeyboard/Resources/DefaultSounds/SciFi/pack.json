@@ -1,0 +1,84 @@
+{
+  "id": "scifi",
+  "name": "Sci-Fi",
+  "author": "ShootingKeyboard",
+  "description": "Futuristic laser blasters, plasma cannons, and cosmic energy discharge.",
+  "sounds": [
+    {
+      "id": "laser_default",
+      "file": "laser_default.wav",
+      "displayName": "Laser Blaster",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "laser_space",
+      "file": "laser_space.wav",
+      "displayName": "Plasma Cannon",
+      "group": "Space",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "laser_enter",
+      "file": "laser_enter.wav",
+      "displayName": "Warp Explosion",
+      "group": "Enter",
+      "volume": 1,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "laser_wasd",
+      "file": "laser_wasd.wav",
+      "displayName": "Phaser Pulse",
+      "group": "WASD",
+      "volume": 0.9,
+      "isComboVariant": false,
+      "comboTier": 0
+    },
+    {
+      "id": "laser_combo1",
+      "file": "laser_combo1.wav",
+      "displayName": "Twin Blaster (Tier 1)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 1
+    },
+    {
+      "id": "laser_combo2",
+      "file": "laser_combo2.wav",
+      "displayName": "Ion Surge (Tier 2)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 2
+    },
+    {
+      "id": "laser_combo3",
+      "file": "laser_combo3.wav",
+      "displayName": "Quantum Beam (Tier 3)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 3
+    },
+    {
+      "id": "laser_combo4",
+      "file": "laser_combo4.wav",
+      "displayName": "Supernova Strike (Tier 4)",
+      "group": null,
+      "volume": 1,
+      "isComboVariant": true,
+      "comboTier": 4
+    }
+  ],
+  "defaults": {
+    "volume": 0.8,
+    "comboWindowMs": 380
+  }
+}

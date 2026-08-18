@@ -1,0 +1,81 @@
+<Window x:Class="ShootingKeyboard.Overlay.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OverlayWindow"
+        Height="200"
+        Width="400"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Focusable="False"
+        IsHitTestVisible="False"
+        Visibility="Hidden">
+    <Grid x:Name="RootGrid">
+        <!-- Key press ripple effect -->
+        <Ellipse x:Name="RippleEllipse"
+                 Width="60"
+                 Height="60"
+                 Fill="Transparent"
+                 Stroke="Orange"
+                 StrokeThickness="3"
+                 Opacity="0"
+                 HorizontalAlignment="Left"
+                 VerticalAlignment="Top"
+                 RenderTransformOrigin="0.5,0.5">
+            <Ellipse.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform x:Name="RippleScale" ScaleX="0" ScaleY="0"/>
+                    <TranslateTransform x:Name="RippleTranslate" X="0" Y="0"/>
+                </TransformGroup>
+            </Ellipse.RenderTransform>
+        </Ellipse>
+
+        <!-- Combo counter display -->
+        <Border x:Name="ComboBorder"
+                Background="#80000000"
+                CornerRadius="10"
+                Padding="15,8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="0,50,0,0"
+                Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="ComboText"
+                           Text="COMBO"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           VerticalAlignment="Center">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="Black" ShadowDepth="2" Opacity="0.8"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+                <TextBlock x:Name="ComboCountText"
+                           Text="0"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="Orange"
+                           Margin="10,0,0,0"
+                           VerticalAlignment="Center">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="Black" ShadowDepth="2" Opacity="0.8"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+                <TextBlock x:Name="TierText"
+                           Text=""
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Foreground="Gold"
+                           Margin="10,0,0,0"
+                           VerticalAlignment="Center">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="Black" ShadowDepth="2" Opacity="0.8"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,22 @@
+<Window x:Class="ShootingKeyboard.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Shooting Keyboard"
+        Height="450"
+        Width="800"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ShowInTaskbar="False"
+        Visibility="Hidden">
+    <Grid>
+        <TextBlock Text="Shooting Keyboard - Running in System Tray"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="18"
+                   Foreground="White">
+            <TextBlock.Effect>
+                <DropShadowEffect Color="Black" ShadowDepth="2" Opacity="0.8"/>
+            </TextBlock.Effect>
+        </TextBlock>
+    </Grid>
+</Window>

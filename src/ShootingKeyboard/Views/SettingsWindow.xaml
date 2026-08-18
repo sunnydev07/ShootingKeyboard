@@ -1,0 +1,177 @@
+<Window x:Class="ShootingKeyboard.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:ShootingKeyboard.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewModels:SettingsViewModel}"
+        Title="Shooting Keyboard — Settings"
+        Height="540"
+        Width="580"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E222B"
+        Foreground="#ECEFF4"
+        FontFamily="Segoe UI"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+            <Setter Property="Margin" Value="0,6"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#2D3340"/>
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+            <Setter Property="BorderBrush" Value="#4C566A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3B4252"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Shooting Keyboard Settings" FontSize="20" FontWeight="Bold" Foreground="#88C0D0"/>
+            <TextBlock Text="Configure audio engine, sound packs, triggers, and performance" FontSize="12" Foreground="#81A1C1" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Settings Body -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16">
+            <StackPanel>
+                <!-- Sound & Pack Controls -->
+                <Border Background="#252A34" CornerRadius="6" Padding="16" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="AUDIO &amp; SOUND PACK" FontWeight="Bold" FontSize="13" Foreground="#A3BE8C" Margin="0,0,0,12"/>
+
+                        <!-- Active Pack Selector -->
+                        <Grid Margin="0,4,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Active Sound Pack:" VerticalAlignment="Center" FontSize="14"/>
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding AvailablePacks}"
+                                      SelectedItem="{Binding SelectedPack}"
+                                      DisplayMemberPath="Name"
+                                      Height="30"
+                                      Margin="0,0,8,0"/>
+                            <Button Grid.Column="2" Content="Test" Command="{Binding TestSoundCommand}" Height="30"/>
+                        </Grid>
+
+                        <!-- Master Volume Slider -->
+                        <Grid Margin="0,6,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Master Volume:" VerticalAlignment="Center" FontSize="14"/>
+                            <Slider Grid.Column="1"
+                                    Minimum="0"
+                                    Maximum="1"
+                                    Value="{Binding MasterVolume}"
+                                    TickFrequency="0.05"
+                                    IsSnapToTickEnabled="False"
+                                    VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding MasterVolume, StringFormat={}{0:P0}}"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       FontWeight="Bold"/>
+                        </Grid>
+
+                        <!-- Combo Window Slider -->
+                        <Grid Margin="0,6,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Combo Window:" VerticalAlignment="Center" FontSize="14"/>
+                            <Slider Grid.Column="1"
+                                    Minimum="100"
+                                    Maximum="1000"
+                                    Value="{Binding ComboWindowMs}"
+                                    TickFrequency="50"
+                                    VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding ComboWindowMs, StringFormat={}{0}ms}"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       FontWeight="Bold"/>
+                        </Grid>
+
+                        <!-- Mute & Enabled toggles -->
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <CheckBox Content="Enabled (Intercept Keys)" IsChecked="{Binding IsEnabled}" Margin="0,0,24,0"/>
+                            <CheckBox Content="Mute Sound Effects" IsChecked="{Binding IsMuted}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Features & Visuals -->
+                <Border Background="#252A34" CornerRadius="6" Padding="16" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="OPTIONS &amp; INTEGRATION" FontWeight="Bold" FontSize="13" Foreground="#EBCB8B" Margin="0,0,0,12"/>
+                        <CheckBox Content="Show On-Screen Ripple &amp; Combo Overlay" IsChecked="{Binding OverlayEnabled}"/>
+                        <CheckBox Content="Start Shooting Keyboard with Windows" IsChecked="{Binding StartWithWindows}"/>
+                        <CheckBox Content="Performance Mode (Disable overlay, optimize latency)" IsChecked="{Binding PerformanceMode}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Quick Nav Links -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Customize Key Bindings..." Command="{Binding OpenKeyBindingsCommand}" Margin="0,0,12,0"/>
+                    <Button Content="Manage Sound Packs..." Command="{Binding OpenSoundPacksCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Action Footer -->
+        <Border Grid.Row="2" BorderBrush="#3B4252" BorderThickness="0,1,0,0" Padding="0,14,0,0">
+            <Grid>
+                <Button Content="Reset Defaults" Command="{Binding ResetDefaultsCommand}" HorizontalAlignment="Left"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Cancel" Click="CancelButton_Click" Margin="0,0,8,0"/>
+                    <Button Content="Save Changes" Command="{Binding SaveCommand}" Background="#5E81AC" Foreground="White"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

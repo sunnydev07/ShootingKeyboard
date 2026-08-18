@@ -1,0 +1,168 @@
+<Window x:Class="ShootingKeyboard.Views.SoundPackWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:ShootingKeyboard.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewModels:SoundPackViewModel}"
+        Title="Shooting Keyboard — Sound Packs"
+        Height="540"
+        Width="680"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E222B"
+        Foreground="#ECEFF4"
+        FontFamily="Segoe UI"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#2D3340"/>
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+            <Setter Property="BorderBrush" Value="#4C566A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3B4252"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Sound Pack Manager" FontSize="20" FontWeight="Bold" Foreground="#88C0D0"/>
+            <TextBlock Text="Browse, preview, and activate themed audio sound effects" FontSize="12" Foreground="#81A1C1" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Main Body -->
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Pack List (Left) -->
+            <Border Grid.Column="0" Background="#252A34" CornerRadius="6" Padding="8" Margin="0,0,12,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <ListBox Grid.Row="0"
+                             ItemsSource="{Binding Packs}"
+                             SelectedItem="{Binding SelectedPack}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="#ECEFF4">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="4,6">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" Foreground="#88C0D0"/>
+                                    <TextBlock Text="{Binding Author, StringFormat='by {0}'}" FontSize="11" Foreground="#81A1C1"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Button Grid.Row="1"
+                            Content="Open Packs Folder"
+                            Command="{Binding OpenPacksFolderCommand}"
+                            Margin="0,8,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- Pack Details & Sound List (Right) -->
+            <Border Grid.Column="1" Background="#252A34" CornerRadius="6" Padding="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Pack Info -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="{Binding SelectedPack.Name}" FontSize="18" FontWeight="Bold" Foreground="#EBCB8B"/>
+                        <TextBlock Text="{Binding SelectedPack.Description}" FontSize="12" Foreground="#D8DEE9" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Sounds Table -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding SelectedPack.Sounds}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#1E222B" CornerRadius="4" Padding="10,6" Margin="0,3">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold"/>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Group}"
+                                                       Foreground="#A3BE8C"
+                                                       FontSize="11"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,12,0"/>
+                                            <Button Grid.Column="2"
+                                                    Content="▶ Play"
+                                                    Command="{Binding DataContext.PlayPreviewCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding Id}"
+                                                    Padding="8,3"
+                                                    FontSize="12"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Activate Button -->
+                    <Button Grid.Row="2"
+                            Content="Set as Active Sound Pack"
+                            Command="{Binding SetActiveCommand}"
+                            Background="#5E81AC"
+                            Foreground="White"
+                            Height="32"
+                            Margin="0,12,0,0"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" BorderBrush="#3B4252" BorderThickness="0,1,0,0" Padding="0,14,0,0">
+            <Button Content="Close" Click="CloseButton_Click" HorizontalAlignment="Right"/>
+        </Border>
+    </Grid>
+</Window>

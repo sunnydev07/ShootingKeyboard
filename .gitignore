@@ -1,0 +1,70 @@
+## Visual Studio & MSBuild
+[Bb]in/
+[Oo]bj/
+[Aa]rms/
+[Aa]rm64/
+[Dd]ebug/
+[Rr]elease/
+[Xx]64/
+[Xx]86/
+build/
+dist/
+target/
+artifacts/
+
+## Visual Studio Cache and Local Settings
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+*.dbmdl
+*.jfm
+
+## Visual Studio Code & IDEs
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+
+## NuGet & Packages
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+packages/
+project.lock.json
+project.assets.json
+
+## Test Results & Coverage
+[Tt]est[Rr]esult*
+[Bb]uild[Ll]og.*
+*.visualstudio.trx
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+## Log and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+
+## OS-generated files
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.Spotlight-V100
+.Trashes
+
+## Local Tool / AI configs
+.claude/settings.local.json
+.gemini/
