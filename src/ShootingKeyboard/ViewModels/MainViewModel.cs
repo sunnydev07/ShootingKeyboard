@@ -28,6 +28,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IForegroundAppService _foregroundAppService;
     private readonly IAppRuleEvaluator _appRuleEvaluator;
     private readonly IProfileManager _profileManager;
+    private readonly IQuietHoursService _quietHoursService;
     private readonly IServiceProvider _serviceProvider;
 
     private SettingsWindow? _settingsWindow;
@@ -53,6 +54,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IForegroundAppService foregroundAppService,
         IAppRuleEvaluator appRuleEvaluator,
         IProfileManager profileManager,
+        IQuietHoursService quietHoursService,
         IServiceProvider serviceProvider)
     {
         _configService = configService;
@@ -70,6 +72,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _foregroundAppService = foregroundAppService;
         _appRuleEvaluator = appRuleEvaluator;
         _profileManager = profileManager;
+        _quietHoursService = quietHoursService;
         _serviceProvider = serviceProvider;
     }
 
@@ -184,6 +187,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (!config.IsEnabled || config.IsMuted)
         {
             _diagnosticsService.RecordPlayback(string.Empty, false, !config.IsEnabled ? "app-disabled" : "muted");
+            return;
+        }
+
+        var quietHours = config.QuietHours ?? new Models.QuietHoursConfig();
+        if (_quietHoursService.IsQuietNow(quietHours, DateTimeOffset.Now))
+        {
+            _diagnosticsService.RecordPlayback(string.Empty, false, "quiet-hours");
             return;
         }
 

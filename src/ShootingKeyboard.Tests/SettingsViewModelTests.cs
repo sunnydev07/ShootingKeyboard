@@ -112,6 +112,9 @@ public class SettingsViewModelTests
         Assert.Equal("#FFA500", vm.RippleColor);
         Assert.Equal("TopCenter", vm.ComboPosition);
         Assert.Equal(1.0, vm.OverlayScale);
+        Assert.False(vm.QuietHoursEnabled);
+        Assert.Equal("22:00", vm.QuietHoursStart);
+        Assert.Equal("08:00", vm.QuietHoursEnd);
         Assert.Equal(2, vm.AvailablePacks.Count);
         Assert.NotNull(vm.SelectedPack);
         Assert.Equal("warzone", vm.SelectedPack.Id);
@@ -193,6 +196,9 @@ public class SettingsViewModelTests
         vm.RippleColor = "#00FF00";
         vm.ComboPosition = "TopRight";
         vm.OverlayScale = 1.8;
+        vm.QuietHoursEnabled = true;
+        vm.QuietHoursStart = "23:00";
+        vm.QuietHoursEnd = "07:00";
         vm.SelectedPack = _testPacks[1]; // scifi
 
         _keyboardHookMock.SetupGet(k => k.IsRunning).Returns(true);
@@ -215,6 +221,9 @@ public class SettingsViewModelTests
             cfg.Overlay.RippleColor == "#00FF00" &&
             cfg.Overlay.ComboPosition == "TopRight" &&
             cfg.Overlay.Scale == 1.8 &&
+            cfg.QuietHours.Enabled == true &&
+            cfg.QuietHours.Start == new TimeSpan(23, 0, 0) &&
+            cfg.QuietHours.End == new TimeSpan(7, 0, 0) &&
             cfg.ActivePackId == "scifi"
         )), Times.Once);
 

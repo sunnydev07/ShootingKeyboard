@@ -58,6 +58,7 @@ public partial class App : Application
         services.AddSingleton<IAppRuleEvaluator, AppRuleEvaluator>();
         services.AddSingleton<IProfileImportExportService, ProfileImportExportService>();
         services.AddSingleton<ISoundPackImportExportService, SoundPackImportExportService>();
+        services.AddSingleton<IQuietHoursService, QuietHoursService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

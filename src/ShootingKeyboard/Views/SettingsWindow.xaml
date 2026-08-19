@@ -285,6 +285,43 @@
                             </StackPanel>
                         </Border>
 
+                        <Border Background="#1E222B" CornerRadius="4" Padding="12,10" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="QUIET HOURS (AUTO-MUTE)" FontSize="11" FontWeight="Bold" Foreground="#88C0D0" Margin="0,0,0,8"/>
+                                <CheckBox Content="Enable Quiet Hours" IsChecked="{Binding QuietHoursEnabled}" Margin="0,0,0,8"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Start Time:" VerticalAlignment="Center" FontSize="13"/>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding QuietHoursStart, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="28"
+                                             Background="#252A34"
+                                             Foreground="#ECEFF4"
+                                             BorderBrush="#4C566A"
+                                             Padding="4,2"
+                                             VerticalContentAlignment="Center"
+                                             ToolTip="e.g. 22:00 (HH:mm 24-hr)"/>
+
+                                    <TextBlock Grid.Column="3" Text="End Time:" VerticalAlignment="Center" FontSize="13"/>
+                                    <TextBox Grid.Column="4"
+                                             Text="{Binding QuietHoursEnd, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="28"
+                                             Background="#252A34"
+                                             Foreground="#ECEFF4"
+                                             BorderBrush="#4C566A"
+                                             Padding="4,2"
+                                             VerticalContentAlignment="Center"
+                                             ToolTip="e.g. 08:00 (HH:mm 24-hr)"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                         <CheckBox Content="Start Shooting Keyboard with Windows" IsChecked="{Binding StartWithWindows}"/>
                         <CheckBox Content="Performance Mode (Disable overlay, optimize latency)" IsChecked="{Binding PerformanceMode}"/>
                     </StackPanel>

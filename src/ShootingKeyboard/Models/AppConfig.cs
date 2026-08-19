@@ -111,6 +111,12 @@ public sealed class AppConfig
     public OverlayConfig Overlay { get; set; } = new();
 
     /// <summary>
+    /// Scheduled quiet hours configuration
+    /// </summary>
+    [JsonPropertyName("quietHours")]
+    public QuietHoursConfig QuietHours { get; set; } = new();
+
+    /// <summary>
     /// Creates a default configuration
     /// </summary>
     public static AppConfig CreateDefault() => new();
@@ -254,6 +260,11 @@ public sealed class AppConfig
         if (string.IsNullOrWhiteSpace(Overlay.RippleColor) || !Overlay.RippleColor.StartsWith("#"))
         {
             Overlay.RippleColor = "#FFA500";
+        }
+
+        if (QuietHours == null)
+        {
+            QuietHours = new QuietHoursConfig();
         }
     }
 }

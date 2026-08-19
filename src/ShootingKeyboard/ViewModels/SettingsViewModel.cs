@@ -75,6 +75,15 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private double _overlayScale = 1.0;
 
+    [ObservableProperty]
+    private bool _quietHoursEnabled;
+
+    [ObservableProperty]
+    private string _quietHoursStart = "22:00";
+
+    [ObservableProperty]
+    private string _quietHoursEnd = "08:00";
+
     public string[] AvailableComboPositions { get; } = new[] { "TopCenter", "TopLeft", "TopRight", "BottomCenter" };
 
     public ObservableCollection<AppProfile> Profiles { get; } = new();
@@ -135,6 +144,11 @@ public sealed partial class SettingsViewModel : ObservableObject
             RippleColor = overlay.RippleColor;
             ComboPosition = overlay.ComboPosition;
             OverlayScale = overlay.Scale;
+
+            var qh = config.QuietHours ?? new QuietHoursConfig();
+            QuietHoursEnabled = qh.Enabled;
+            QuietHoursStart = qh.Start.ToString(@"hh\:mm");
+            QuietHoursEnd = qh.End.ToString(@"hh\:mm");
 
             Profiles.Clear();
             foreach (var profile in _profileManager.GetProfiles(config))
@@ -344,6 +358,17 @@ public sealed partial class SettingsViewModel : ObservableObject
         config.Overlay.RippleColor = RippleColor;
         config.Overlay.ComboPosition = ComboPosition;
         config.Overlay.Scale = OverlayScale;
+
+        config.QuietHours ??= new QuietHoursConfig();
+        config.QuietHours.Enabled = QuietHoursEnabled;
+        if (TimeSpan.TryParse(QuietHoursStart, out var start))
+        {
+            config.QuietHours.Start = start;
+        }
+        if (TimeSpan.TryParse(QuietHoursEnd, out var end))
+        {
+            config.QuietHours.End = end;
+        }
 
         if (SelectedPack != null)
         {

@@ -26,6 +26,7 @@ public class MainViewModelTests
     private readonly Mock<IForegroundAppService> _foregroundAppServiceMock = new();
     private readonly Mock<IAppRuleEvaluator> _appRuleEvaluatorMock = new();
     private readonly Mock<IProfileManager> _profileManagerMock = new();
+    private readonly Mock<IQuietHoursService> _quietHoursServiceMock = new();
     private readonly Mock<IServiceProvider> _serviceProviderMock = new();
 
     private readonly SoundPack _testPack;
@@ -93,6 +94,7 @@ public class MainViewModelTests
             _foregroundAppServiceMock.Object,
             _appRuleEvaluatorMock.Object,
             _profileManagerMock.Object,
+            _quietHoursServiceMock.Object,
             _serviceProviderMock.Object);
     }
 
@@ -192,6 +194,31 @@ public class MainViewModelTests
 
         // Effective volume = 1.0 (clip) * 0.8 (WASD group) * 0.5 (key 0x41) = 0.40f
         _audioEngineMock.Verify(a => a.PlayWithPitch("shot_default", It.Is<float>(v => Math.Abs(v - 0.4f) < 0.001f), 1.0f), Times.Once);
+    }
+
+    [Fact]
+    public void OnKeyPressed_WhenQuietHoursActive_SuppressesPlaybackAndRecordsDiagnostics()
+    {
+        var config = new AppConfig
+        {
+            IsEnabled = true,
+            IsMuted = false,
+            ActivePackId = "warzone",
+            QuietHours = new QuietHoursConfig { Enabled = true }
+        };
+        var vm = CreateViewModel(config);
+        vm.Initialize();
+
+        _quietHoursServiceMock.Setup(q => q.IsQuietNow(It.IsAny<QuietHoursConfig>(), It.IsAny<DateTimeOffset>()))
+            .Returns(true);
+
+        // Act
+        _keyboardHookMock.Raise(k => k.KeyPressed += null, new KeyPressedEventArgs(new KeyEvent(0x41, true)));
+
+        // Assert: No sound played, diagnostics recorded
+        _audioEngineMock.Verify(a => a.Play(It.IsAny<string>(), It.IsAny<float>()), Times.Never);
+        _audioEngineMock.Verify(a => a.PlayWithPitch(It.IsAny<string>(), It.IsAny<float>(), It.IsAny<float>()), Times.Never);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback(string.Empty, false, "quiet-hours"), Times.Once);
     }
 
     [Fact]
