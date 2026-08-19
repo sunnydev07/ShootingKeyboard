@@ -55,7 +55,11 @@ public class SettingsViewModelTests
         };
 
         _soundPackManagerMock.Setup(m => m.GetPacks()).Returns(_testPacks);
-        _profileManagerMock.Setup(p => p.GetProfiles(It.IsAny<AppConfig>())).Returns(_testProfiles);
+        _profileManagerMock.Setup(p => p.GetProfiles(It.IsAny<AppConfig>()))
+            .Returns(_testProfiles);
+
+        _audioEngineMock.Setup(a => a.GetOutputDevices())
+            .Returns(new List<AudioDeviceInfo> { new AudioDeviceInfo { Id = "device_1", Name = "Headphones" } });
     }
 
     private SettingsViewModel CreateViewModel(AppConfig? config = null)
@@ -121,6 +125,8 @@ public class SettingsViewModelTests
         Assert.Equal(2, vm.Profiles.Count);
         Assert.NotNull(vm.SelectedProfile);
         Assert.Equal("default", vm.SelectedProfile.Id);
+        Assert.Equal(2, vm.AvailableAudioDevices.Count);
+        Assert.NotNull(vm.SelectedAudioDevice);
     }
 
     [Fact]
@@ -199,6 +205,7 @@ public class SettingsViewModelTests
         vm.QuietHoursEnabled = true;
         vm.QuietHoursStart = "23:00";
         vm.QuietHoursEnd = "07:00";
+        vm.SelectedAudioDevice = new AudioDeviceInfo { Id = "device_1", Name = "Headphones" };
         vm.SelectedPack = _testPacks[1]; // scifi
 
         _keyboardHookMock.SetupGet(k => k.IsRunning).Returns(true);
@@ -224,12 +231,14 @@ public class SettingsViewModelTests
             cfg.QuietHours.Enabled == true &&
             cfg.QuietHours.Start == new TimeSpan(23, 0, 0) &&
             cfg.QuietHours.End == new TimeSpan(7, 0, 0) &&
+            cfg.AudioOutputDeviceId == "device_1" &&
             cfg.ActivePackId == "scifi"
         )), Times.Once);
 
         // Verify runtime updates
         _audioEngineMock.Verify(a => a.SetMasterVolume(0.5f), Times.AtLeastOnce());
         _audioEngineMock.Verify(a => a.SetMuted(true), Times.AtLeastOnce());
+        _audioEngineMock.Verify(a => a.SetOutputDevice("device_1"), Times.Once);
         _comboTrackerMock.VerifySet(ct => ct.ComboWindowMs = 600, Times.AtLeastOnce());
         _overlayManagerMock.VerifySet(o => o.IsEnabled = false, Times.AtLeastOnce());
         _overlayManagerMock.Verify(o => o.ApplyConfig(It.Is<OverlayConfig>(oc => oc.ComboPosition == "TopRight")), Times.Once);

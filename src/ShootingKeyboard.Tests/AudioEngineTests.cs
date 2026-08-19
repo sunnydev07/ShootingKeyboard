@@ -91,4 +91,34 @@ public class AudioEngineTests
         // Unloaded sound should silently not throw
         engine.Play("missing_sound", 1.0f);
     }
+
+    [Fact]
+    public void AudioEngineService_GetOutputDevices_DoesNotThrow()
+    {
+        using var engine = new AudioEngineService();
+        var devices = engine.GetOutputDevices();
+        Assert.NotNull(devices);
+    }
+
+    [Fact]
+    public void AudioEngineService_SetOutputDevice_NullOrEmpty_SetsDefault()
+    {
+        using var engine = new AudioEngineService();
+        var result = engine.SetOutputDevice(null);
+        Assert.True(result);
+        Assert.Null(engine.CurrentOutputDeviceId);
+
+        result = engine.SetOutputDevice("");
+        Assert.True(result);
+        Assert.Null(engine.CurrentOutputDeviceId);
+    }
+
+    [Fact]
+    public void AudioEngineService_SetOutputDevice_InvalidId_ReturnsFalseAndResetsToDefault()
+    {
+        using var engine = new AudioEngineService();
+        var result = engine.SetOutputDevice("nonexistent_device_guid_12345");
+        Assert.False(result);
+        Assert.Null(engine.CurrentOutputDeviceId);
+    }
 }

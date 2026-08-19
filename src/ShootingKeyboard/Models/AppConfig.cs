@@ -117,6 +117,12 @@ public sealed class AppConfig
     public QuietHoursConfig QuietHours { get; set; } = new();
 
     /// <summary>
+    /// ID of the selected audio output device, or null for default
+    /// </summary>
+    [JsonPropertyName("audioOutputDeviceId")]
+    public string? AudioOutputDeviceId { get; set; }
+
+    /// <summary>
     /// Creates a default configuration
     /// </summary>
     public static AppConfig CreateDefault() => new();

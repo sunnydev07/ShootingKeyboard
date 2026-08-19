@@ -84,10 +84,14 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _quietHoursEnd = "08:00";
 
+    [ObservableProperty]
+    private AudioDeviceInfo? _selectedAudioDevice;
+
     public string[] AvailableComboPositions { get; } = new[] { "TopCenter", "TopLeft", "TopRight", "BottomCenter" };
 
     public ObservableCollection<AppProfile> Profiles { get; } = new();
     public ObservableCollection<SoundPack> AvailablePacks { get; } = new();
+    public ObservableCollection<AudioDeviceInfo> AvailableAudioDevices { get; } = new();
 
     public event Action? RequestClose;
     public event Action? RequestOpenKeyBindings;
@@ -166,6 +170,15 @@ public sealed partial class SettingsViewModel : ObservableObject
 
             SelectedPack = AvailablePacks.FirstOrDefault(p => p.Id.Equals(config.ActivePackId, StringComparison.OrdinalIgnoreCase))
                            ?? AvailablePacks.FirstOrDefault();
+
+            AvailableAudioDevices.Clear();
+            AvailableAudioDevices.Add(new AudioDeviceInfo { Id = "", Name = "System Default", IsDefault = true });
+            foreach (var dev in _audioEngine.GetOutputDevices())
+            {
+                AvailableAudioDevices.Add(dev);
+            }
+            SelectedAudioDevice = AvailableAudioDevices.FirstOrDefault(d => !string.IsNullOrEmpty(d.Id) && d.Id.Equals(config.AudioOutputDeviceId, StringComparison.OrdinalIgnoreCase))
+                                  ?? AvailableAudioDevices[0];
         }
         finally
         {
@@ -376,11 +389,14 @@ public sealed partial class SettingsViewModel : ObservableObject
             _soundPackManager.SetActivePack(SelectedPack.Id);
         }
 
+        config.AudioOutputDeviceId = string.IsNullOrEmpty(SelectedAudioDevice?.Id) ? null : SelectedAudioDevice.Id;
+
         _configService.Save(config);
 
         // Apply runtime changes
         _audioEngine.SetMasterVolume(config.MasterVolume);
         _audioEngine.SetMuted(config.IsMuted);
+        _audioEngine.SetOutputDevice(config.AudioOutputDeviceId);
         _comboTracker.ComboWindowMs = config.ComboWindowMs;
         _overlayManager.IsEnabled = config.OverlayEnabled && !config.PerformanceMode;
         _overlayManager.ApplyConfig(config.Overlay);

@@ -21,10 +21,84 @@ public sealed class AudioEngineService : IAudioEngine
     private float _masterVolume = 0.7f;
     private bool _muted = false;
     private bool _disposed = false;
+    private string? _currentOutputDeviceId = null;
     private readonly object _initLock = new();
+
+    public string? CurrentOutputDeviceId => _currentOutputDeviceId;
 
     public AudioEngineService()
     {
+        InitializeOutput();
+    }
+
+    public IReadOnlyList<Models.AudioDeviceInfo> GetOutputDevices()
+    {
+        var devices = new List<Models.AudioDeviceInfo>();
+        try
+        {
+            using var enumerator = new MMDeviceEnumerator();
+            var endpoints = enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
+            MMDevice? defaultDevice = null;
+            try
+            {
+                defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+            }
+            catch { }
+
+            foreach (var ep in endpoints)
+            {
+                devices.Add(new Models.AudioDeviceInfo
+                {
+                    Id = ep.ID,
+                    Name = ep.FriendlyName,
+                    IsDefault = defaultDevice != null && ep.ID == defaultDevice.ID
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to enumerate audio devices: {ex.Message}");
+        }
+
+        return devices;
+    }
+
+    public bool SetOutputDevice(string? deviceId)
+    {
+        lock (_initLock)
+        {
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                _currentOutputDeviceId = null;
+                RecreateOutput();
+                return true;
+            }
+
+            var devices = GetOutputDevices();
+            var matched = devices.FirstOrDefault(d => d.Id.Equals(deviceId, StringComparison.OrdinalIgnoreCase));
+            if (matched == null)
+            {
+                _currentOutputDeviceId = null;
+                RecreateOutput();
+                return false;
+            }
+
+            _currentOutputDeviceId = matched.Id;
+            RecreateOutput();
+            return true;
+        }
+    }
+
+    private void RecreateOutput()
+    {
+        try
+        {
+            _output?.Stop();
+            _output?.Dispose();
+            _output = null;
+        }
+        catch { }
+
         InitializeOutput();
     }
 
@@ -35,10 +109,32 @@ public sealed class AudioEngineService : IAudioEngine
             if (_output != null && _mixer != null)
                 return;
 
-            _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2))
+            _mixer ??= new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2))
             {
                 ReadFully = true
             };
+
+            // If a specific output device was selected, attempt to use WasapiOut with that device
+            if (!string.IsNullOrEmpty(_currentOutputDeviceId))
+            {
+                try
+                {
+                    using var enumerator = new MMDeviceEnumerator();
+                    var device = enumerator.GetDevice(_currentOutputDeviceId);
+                    if (device != null)
+                    {
+                        var wasapi = new WasapiOut(device, AudioClientShareMode.Shared, false, 50);
+                        wasapi.Init(_mixer);
+                        wasapi.Play();
+                        _output = wasapi;
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"WasapiOut with device {_currentOutputDeviceId} failed: {ex.Message}");
+                }
+            }
 
             // Strategy 1: DirectSoundOut (Universally supported across all Windows sound hardware, headsets, virtual drivers)
             try

@@ -130,7 +130,7 @@
                         <TextBlock Text="AUDIO &amp; SOUND PACK" FontWeight="Bold" FontSize="13" Foreground="#A3BE8C" Margin="0,0,0,12"/>
 
                         <!-- Active Pack Selector -->
-                        <Grid Margin="0,4,0,12">
+                        <Grid Margin="0,4,0,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="140"/>
                                 <ColumnDefinition Width="*"/>
@@ -144,6 +144,20 @@
                                       Height="30"
                                       Margin="0,0,8,0"/>
                             <Button Grid.Column="2" Content="Test" Command="{Binding TestSoundCommand}" Height="30"/>
+                        </Grid>
+
+                        <!-- Audio Output Device Selector -->
+                        <Grid Margin="0,4,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Output Device:" VerticalAlignment="Center" FontSize="14"/>
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding AvailableAudioDevices}"
+                                      SelectedItem="{Binding SelectedAudioDevice}"
+                                      DisplayMemberPath="Name"
+                                      Height="30"/>
                         </Grid>
 
                         <!-- Master Volume Slider -->

@@ -69,4 +69,19 @@ public interface IAudioEngine : IDisposable
     /// Unloads all sounds
     /// </summary>
     void UnloadAllSounds();
+
+    /// <summary>
+    /// Gets available audio output devices
+    /// </summary>
+    IReadOnlyList<Models.AudioDeviceInfo> GetOutputDevices();
+
+    /// <summary>
+    /// ID of the current output device, or null for default
+    /// </summary>
+    string? CurrentOutputDeviceId { get; }
+
+    /// <summary>
+    /// Sets the output device. Pass null or empty for default device. Returns true if device was applied.
+    /// </summary>
+    bool SetOutputDevice(string? deviceId);
 }

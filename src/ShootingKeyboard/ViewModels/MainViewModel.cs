@@ -83,6 +83,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         // Configure audio engine
         _audioEngine.SetMasterVolume(config.MasterVolume);
         _audioEngine.SetMuted(config.IsMuted);
+        _audioEngine.SetOutputDevice(config.AudioOutputDeviceId);
 
         // Configure combo tracker
         _comboTracker.ComboWindowMs = config.ComboWindowMs;
