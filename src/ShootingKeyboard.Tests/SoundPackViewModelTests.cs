@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ public class SoundPackViewModelTests
     private readonly Mock<ISoundPackManager> _soundPackManagerMock = new();
     private readonly Mock<IAudioEngine> _audioEngineMock = new();
     private readonly Mock<IConfigService> _configServiceMock = new();
+    private readonly Mock<ISoundPackValidator> _soundPackValidatorMock = new();
 
     private readonly List<SoundPack> _testPacks;
 
@@ -47,6 +49,13 @@ public class SoundPackViewModelTests
         };
 
         _soundPackManagerMock.Setup(m => m.GetPacks()).Returns(_testPacks);
+        _soundPackValidatorMock.Setup(v => v.Validate(It.IsAny<SoundPack>()))
+            .Returns((SoundPack pack) => new SoundPackValidationResult
+            {
+                PackId = pack?.Id ?? "",
+                PackName = pack?.Name ?? "",
+                Issues = new List<SoundPackValidationIssue>()
+            });
     }
 
     private SoundPackViewModel CreateViewModel(AppConfig? config = null)
@@ -57,7 +66,8 @@ public class SoundPackViewModelTests
         return new SoundPackViewModel(
             _soundPackManagerMock.Object,
             _audioEngineMock.Object,
-            _configServiceMock.Object);
+            _configServiceMock.Object,
+            _soundPackValidatorMock.Object);
     }
 
     [Fact]
@@ -70,6 +80,8 @@ public class SoundPackViewModelTests
         Assert.Equal("warzone", vm.ActivePackId);
         Assert.NotNull(vm.SelectedPack);
         Assert.Equal("warzone", vm.SelectedPack.Id);
+        Assert.True(vm.SelectedPackIsValid);
+        Assert.Equal("Pack is valid", vm.SelectedPackValidationSummary);
     }
 
     [Fact]
@@ -88,6 +100,63 @@ public class SoundPackViewModelTests
         _configServiceMock.Verify(c => c.Save(It.Is<AppConfig>(cfg => cfg.ActivePackId == "scifi")), Times.Once);
         _soundPackManagerMock.Verify(m => m.SetActivePack("scifi"), Times.Once);
         Assert.Equal("scifi", vm.ActivePackId);
+    }
+
+    [Fact]
+    public void SelectInvalidPack_PopulatesIssuesSummaryAndDisablesSetActiveCommand()
+    {
+        var invalidPack = new SoundPack
+        {
+            Id = "broken",
+            Name = "Broken Pack",
+            Sounds = new List<SoundEntry>()
+        };
+        _testPacks.Add(invalidPack);
+
+        _soundPackValidatorMock.Setup(v => v.Validate(invalidPack)).Returns(new SoundPackValidationResult
+        {
+            PackId = "broken",
+            PackName = "Broken Pack",
+            Issues = new List<SoundPackValidationIssue>
+            {
+                new SoundPackValidationIssue
+                {
+                    Severity = SoundPackValidationSeverity.Error,
+                    Code = "sounds.empty",
+                    Message = "No sounds found."
+                }
+            }
+        });
+
+        var vm = CreateViewModel();
+        vm.SelectedPack = invalidPack;
+
+        Assert.False(vm.SelectedPackIsValid);
+        Assert.Contains("1 error(s)", vm.SelectedPackValidationSummary);
+        Assert.Single(vm.SelectedPackIssues);
+        Assert.Equal("sounds.empty", vm.SelectedPackIssues[0].Code);
+        Assert.False(vm.SetActiveCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void SelectValidPack_EnablesSetActiveCommand()
+    {
+        var vm = CreateViewModel();
+        vm.SelectedPack = _testPacks[0];
+
+        Assert.True(vm.SelectedPackIsValid);
+        Assert.Equal("Pack is valid", vm.SelectedPackValidationSummary);
+        Assert.Empty(vm.SelectedPackIssues);
+        Assert.True(vm.SetActiveCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void ValidateSelectedPackCommand_TriggersValidation()
+    {
+        var vm = CreateViewModel();
+        vm.ValidateSelectedPackCommand.Execute(null);
+
+        _soundPackValidatorMock.Verify(v => v.Validate(It.IsAny<SoundPack>()), Times.AtLeast(2));
     }
 
     [Fact]

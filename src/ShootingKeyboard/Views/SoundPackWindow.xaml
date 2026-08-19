@@ -111,9 +111,25 @@
                     </Grid.RowDefinitions>
 
                     <!-- Pack Info -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                    <StackPanel Grid.Row="0" Margin="0,0,0,10">
                         <TextBlock Text="{Binding SelectedPack.Name}" FontSize="18" FontWeight="Bold" Foreground="#EBCB8B"/>
-                        <TextBlock Text="{Binding SelectedPack.Description}" FontSize="12" Foreground="#D8DEE9" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding SelectedPack.Description}" FontSize="12" Foreground="#D8DEE9" TextWrapping="Wrap" Margin="0,4,0,4"/>
+                        <TextBlock Text="{Binding SelectedPackValidationSummary}" FontSize="12" FontWeight="SemiBold" Foreground="#88C0D0" Margin="0,2,0,4"/>
+                        <ScrollViewer MaxHeight="80" VerticalScrollBarVisibility="Auto" Margin="0,2,0,0">
+                            <ItemsControl ItemsSource="{Binding SelectedPackIssues}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#2E3440" CornerRadius="3" Padding="6,2" Margin="0,1">
+                                            <TextBlock FontSize="11" TextWrapping="Wrap">
+                                                <Run Text="{Binding Severity}" FontWeight="Bold" Foreground="#BF616A"/>
+                                                <Run Text="{Binding Code, StringFormat=' [{0}]: '}" Foreground="#EBCB8B"/>
+                                                <Run Text="{Binding Message}" Foreground="#ECEFF4"/>
+                                            </TextBlock>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </StackPanel>
 
                     <!-- Sounds Table -->
