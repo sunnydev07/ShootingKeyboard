@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using ShootingKeyboard.Models;
+
 namespace ShootingKeyboard.Services;
 
 /// <summary>
@@ -31,6 +35,26 @@ public interface ITrayIconManager : IDisposable
     event EventHandler? ExitRequested;
 
     /// <summary>
+    /// Event raised when a profile is selected from the quick menu
+    /// </summary>
+    event EventHandler<string>? ProfileSelected;
+
+    /// <summary>
+    /// Event raised when a sound pack is selected from the quick menu
+    /// </summary>
+    event EventHandler<string>? SoundPackSelected;
+
+    /// <summary>
+    /// Event raised when a volume level is selected from the quick menu
+    /// </summary>
+    event EventHandler<float>? VolumeSelected;
+
+    /// <summary>
+    /// Event raised when overlay toggle is requested
+    /// </summary>
+    event EventHandler? ToggleOverlayRequested;
+
+    /// <summary>
     /// Updates the tray icon tooltip
     /// </summary>
     void UpdateTooltip(string tooltip);
@@ -39,6 +63,11 @@ public interface ITrayIconManager : IDisposable
     /// Shows a balloon notification
     /// </summary>
     void ShowNotification(string title, string message, BalloonIcon icon = BalloonIcon.Info);
+
+    /// <summary>
+    /// Rebuilds quick menus (profiles, sound packs, volume) in tray context menu
+    /// </summary>
+    void RebuildQuickMenus(IReadOnlyList<AppProfile> profiles, string activeProfileId, IReadOnlyList<SoundPack> packs, string activePackId);
 }
 
 /// <summary>

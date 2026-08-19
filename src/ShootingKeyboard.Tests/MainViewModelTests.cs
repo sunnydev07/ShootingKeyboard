@@ -25,6 +25,7 @@ public class MainViewModelTests
     private readonly Mock<ISoundVariantSelector> _variantSelectorMock = new();
     private readonly Mock<IForegroundAppService> _foregroundAppServiceMock = new();
     private readonly Mock<IAppRuleEvaluator> _appRuleEvaluatorMock = new();
+    private readonly Mock<IProfileManager> _profileManagerMock = new();
     private readonly Mock<IServiceProvider> _serviceProviderMock = new();
 
     private readonly SoundPack _testPack;
@@ -54,6 +55,11 @@ public class MainViewModelTests
 
         _appRuleEvaluatorMock.Setup(e => e.Evaluate(It.IsAny<ForegroundAppInfo>(), It.IsAny<AppConfig>()))
             .Returns(new AppRuleDecision { ShouldPlay = true, Reason = "no-rule" });
+
+        _profileManagerMock.Setup(p => p.GetProfiles(It.IsAny<AppConfig>()))
+            .Returns(new List<AppProfile> { new AppProfile { Id = "default", Name = "Default" } });
+        _profileManagerMock.Setup(p => p.GetActiveProfile(It.IsAny<AppConfig>()))
+            .Returns(new AppProfile { Id = "default", Name = "Default" });
     }
 
     private MainViewModel CreateViewModel(AppConfig? config = null)
@@ -86,6 +92,7 @@ public class MainViewModelTests
             _variantSelectorMock.Object,
             _foregroundAppServiceMock.Object,
             _appRuleEvaluatorMock.Object,
+            _profileManagerMock.Object,
             _serviceProviderMock.Object);
     }
 
@@ -378,6 +385,57 @@ public class MainViewModelTests
         // Assert
         _audioEngineMock.Verify(a => a.UnloadAllSounds(), Times.AtLeastOnce());
         _trayIconManagerMock.Verify(t => t.UpdateTooltip(It.IsAny<string>()), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public void TrayIcon_SoundPackSelected_SwitchesPackAndSavesConfig()
+    {
+        var vm = CreateViewModel();
+        vm.Initialize();
+
+        _trayIconManagerMock.Raise(t => t.SoundPackSelected += null, _trayIconManagerMock.Object, "warzone");
+
+        _soundPackManagerMock.Verify(s => s.SetActivePack("warzone"), Times.AtLeastOnce());
+        _configServiceMock.Verify(c => c.Save(It.Is<AppConfig>(cfg => cfg.ActivePackId == "warzone")), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public void TrayIcon_ProfileSelected_SwitchesProfileAndSavesConfig()
+    {
+        var vm = CreateViewModel();
+        vm.Initialize();
+
+        _profileManagerMock.Setup(p => p.SetActiveProfile(It.IsAny<AppConfig>(), "gaming")).Returns(true);
+
+        _trayIconManagerMock.Raise(t => t.ProfileSelected += null, _trayIconManagerMock.Object, "gaming");
+
+        _profileManagerMock.Verify(p => p.SetActiveProfile(It.IsAny<AppConfig>(), "gaming"), Times.Once);
+        _configServiceMock.Verify(c => c.Save(It.Is<AppConfig>(cfg => cfg.ActivePackId != null)), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public void TrayIcon_VolumeSelected_UpdatesVolumeAndSavesConfig()
+    {
+        var vm = CreateViewModel();
+        vm.Initialize();
+
+        _trayIconManagerMock.Raise(t => t.VolumeSelected += null, _trayIconManagerMock.Object, 0.5f);
+
+        _audioEngineMock.Verify(a => a.SetMasterVolume(0.5f), Times.AtLeastOnce());
+        _configServiceMock.Verify(c => c.Save(It.Is<AppConfig>(cfg => cfg.MasterVolume == 0.5f)), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public void TrayIcon_ToggleOverlayRequested_TogglesOverlayAndSavesConfig()
+    {
+        var config = new AppConfig { OverlayEnabled = true };
+        var vm = CreateViewModel(config);
+        vm.Initialize();
+
+        _trayIconManagerMock.Raise(t => t.ToggleOverlayRequested += null, _trayIconManagerMock.Object, EventArgs.Empty);
+
+        _configServiceMock.Verify(c => c.Save(It.Is<AppConfig>(cfg => cfg.OverlayEnabled == false)), Times.AtLeastOnce());
+        _overlayManagerMock.VerifySet(o => o.IsEnabled = false, Times.AtLeastOnce());
     }
 
     [Fact]

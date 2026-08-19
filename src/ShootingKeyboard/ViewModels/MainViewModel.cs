@@ -27,6 +27,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly ISoundVariantSelector _variantSelector;
     private readonly IForegroundAppService _foregroundAppService;
     private readonly IAppRuleEvaluator _appRuleEvaluator;
+    private readonly IProfileManager _profileManager;
     private readonly IServiceProvider _serviceProvider;
 
     private SettingsWindow? _settingsWindow;
@@ -51,6 +52,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ISoundVariantSelector variantSelector,
         IForegroundAppService foregroundAppService,
         IAppRuleEvaluator appRuleEvaluator,
+        IProfileManager profileManager,
         IServiceProvider serviceProvider)
     {
         _configService = configService;
@@ -67,6 +69,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _variantSelector = variantSelector;
         _foregroundAppService = foregroundAppService;
         _appRuleEvaluator = appRuleEvaluator;
+        _profileManager = profileManager;
         _serviceProvider = serviceProvider;
     }
 
@@ -110,8 +113,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _trayIconManager.ToggleMuteRequested += (s, e) => ToggleMute();
         _trayIconManager.ToggleEnabledRequested += (s, e) => ToggleEnabled();
         _trayIconManager.ExitRequested += (s, e) => ExitApp();
+        _trayIconManager.ProfileSelected += (s, profileId) => SwitchProfile(profileId);
+        _trayIconManager.SoundPackSelected += (s, packId) => SwitchSoundPack(packId);
+        _trayIconManager.VolumeSelected += (s, volume) => SetVolume(volume);
+        _trayIconManager.ToggleOverlayRequested += (s, e) => ToggleOverlay();
 
         UpdateTrayTooltip();
+        UpdateTrayMenu();
 
         if (config.IsEnabled)
         {
@@ -344,7 +352,65 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
 
         UpdateTrayTooltip();
+        UpdateTrayMenu();
         _trayIconManager.ShowNotification("Shooting Keyboard", config.IsEnabled ? "Resumed (active)" : "Paused", BalloonIcon.Info);
+    }
+
+    public void SwitchProfile(string profileId)
+    {
+        var config = _configService.Load();
+        if (_profileManager.SetActiveProfile(config, profileId))
+        {
+            _configService.Save(config);
+            _audioEngine.SetMasterVolume(config.MasterVolume);
+            _audioEngine.SetMuted(config.IsMuted);
+            _comboTracker.ComboWindowMs = config.ComboWindowMs;
+            _overlayManager.IsEnabled = config.OverlayEnabled && !config.PerformanceMode;
+            _overlayManager.ApplyConfig(config.Overlay ?? new Models.OverlayConfig());
+            _soundPackManager.SetActivePack(config.ActivePackId);
+            LoadActivePackAudio();
+            UpdateTrayTooltip();
+            UpdateTrayMenu();
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Switched to profile '{_profileManager.GetActiveProfile(config).Name}'", BalloonIcon.Info);
+        }
+    }
+
+    public void SwitchSoundPack(string packId)
+    {
+        var config = _configService.Load();
+        config.ActivePackId = packId;
+        _configService.Save(config);
+        _soundPackManager.SetActivePack(packId);
+        LoadActivePackAudio();
+        UpdateTrayTooltip();
+        UpdateTrayMenu();
+        _trayIconManager.ShowNotification("Shooting Keyboard", $"Sound pack changed to '{_soundPackManager.ActivePack?.Name}'", BalloonIcon.Info);
+    }
+
+    public void SetVolume(float volume)
+    {
+        var config = _configService.Load();
+        config.MasterVolume = volume;
+        _configService.Save(config);
+        _audioEngine.SetMasterVolume(volume);
+        _trayIconManager.ShowNotification("Shooting Keyboard", $"Volume set to {(int)(volume * 100)}%", BalloonIcon.Info);
+    }
+
+    public void ToggleOverlay()
+    {
+        var config = _configService.Load();
+        config.OverlayEnabled = !config.OverlayEnabled;
+        _configService.Save(config);
+        _overlayManager.IsEnabled = config.OverlayEnabled && !config.PerformanceMode;
+        _trayIconManager.ShowNotification("Shooting Keyboard", config.OverlayEnabled ? "Overlay enabled" : "Overlay disabled", BalloonIcon.Info);
+    }
+
+    public void UpdateTrayMenu()
+    {
+        var config = _configService.Load();
+        var profiles = _profileManager.GetProfiles(config);
+        var packs = _soundPackManager.GetPacks();
+        _trayIconManager.RebuildQuickMenus(profiles, config.ActiveProfileId, packs, config.ActivePackId);
     }
 
     public void ShowSettingsWindow()
