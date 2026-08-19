@@ -19,6 +19,7 @@ public class SettingsViewModelTests
     private readonly Mock<IComboTracker> _comboTrackerMock = new();
     private readonly Mock<ITrayIconManager> _trayIconManagerMock = new();
     private readonly Mock<IProfileManager> _profileManagerMock = new();
+    private readonly Mock<IProfileImportExportService> _profileImportExportServiceMock = new();
 
     private readonly List<SoundPack> _testPacks;
     private readonly List<AppProfile> _testProfiles;
@@ -88,7 +89,8 @@ public class SettingsViewModelTests
             _overlayManagerMock.Object,
             _comboTrackerMock.Object,
             _trayIconManagerMock.Object,
-            _profileManagerMock.Object);
+            _profileManagerMock.Object,
+            _profileImportExportServiceMock.Object);
     }
 
     [Fact]
@@ -362,5 +364,32 @@ public class SettingsViewModelTests
         vm.OpenAppRulesCommand.Execute(null);
 
         Assert.True(eventFired);
+    }
+
+    [Fact]
+    public void ImportProfileFromFile_AddsProfileAndReloads()
+    {
+        var vm = CreateViewModel();
+        var imported = new AppProfile { Id = "imported_id", Name = "Imported Profile", MasterVolume = 0.9f };
+        _profileImportExportServiceMock.Setup(p => p.ImportProfile("C:\\test\\profile.json")).Returns(imported);
+
+        var result = vm.ImportProfileFromFile("C:\\test\\profile.json");
+
+        Assert.True(result);
+        _configServiceMock.Verify(c => c.Save(It.Is<AppConfig>(cfg => cfg.Profiles.Any(p => p.Name == "Imported Profile"))), Times.Once);
+        _trayIconManagerMock.Verify(t => t.ShowNotification("Shooting Keyboard", It.Is<string>(s => s.Contains("imported")), BalloonIcon.Info), Times.Once);
+    }
+
+    [Fact]
+    public void ExportSelectedProfileToFile_ExportsSelectedProfile()
+    {
+        var vm = CreateViewModel();
+        vm.SelectedProfile = _testProfiles[0];
+
+        var result = vm.ExportSelectedProfileToFile("C:\\test\\exported.json");
+
+        Assert.True(result);
+        _profileImportExportServiceMock.Verify(p => p.ExportProfile(_testProfiles[0], "C:\\test\\exported.json"), Times.Once);
+        _trayIconManagerMock.Verify(t => t.ShowNotification("Shooting Keyboard", It.Is<string>(s => s.Contains("exported")), BalloonIcon.Info), Times.Once);
     }
 }

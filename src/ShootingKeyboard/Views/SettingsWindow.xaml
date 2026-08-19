@@ -115,6 +115,12 @@
                                      VerticalContentAlignment="Center"/>
                             <Button Grid.Column="2" Content="Create Profile" Command="{Binding CreateProfileCommand}" Height="30" Background="#5E81AC"/>
                         </Grid>
+
+                        <!-- Import/Export Profile Actions -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                            <Button Content="Import Profile..." Click="ImportProfileButton_Click" Margin="0,0,8,0"/>
+                            <Button Content="Export Selected..." Click="ExportProfileButton_Click"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

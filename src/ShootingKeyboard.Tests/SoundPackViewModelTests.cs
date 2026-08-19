@@ -16,6 +16,8 @@ public class SoundPackViewModelTests
     private readonly Mock<IAudioEngine> _audioEngineMock = new();
     private readonly Mock<IConfigService> _configServiceMock = new();
     private readonly Mock<ISoundPackValidator> _soundPackValidatorMock = new();
+    private readonly Mock<ISoundPackImportExportService> _packImportExportServiceMock = new();
+    private readonly Mock<ITrayIconManager> _trayIconManagerMock = new();
 
     private readonly List<SoundPack> _testPacks;
 
@@ -67,7 +69,9 @@ public class SoundPackViewModelTests
             _soundPackManagerMock.Object,
             _audioEngineMock.Object,
             _configServiceMock.Object,
-            _soundPackValidatorMock.Object);
+            _soundPackValidatorMock.Object,
+            _packImportExportServiceMock.Object,
+            _trayIconManagerMock.Object);
     }
 
     [Fact]
@@ -217,5 +221,32 @@ public class SoundPackViewModelTests
         // Act (should handle execution gracefully)
         var ex = Record.Exception(() => vm.OpenPacksFolder());
         Assert.Null(ex);
+    }
+
+    [Fact]
+    public void InstallPackZip_InstallsAndRefreshesPacks()
+    {
+        var vm = CreateViewModel();
+        _packImportExportServiceMock.Setup(p => p.InstallFromZip("C:\\test\\pack.zip", It.IsAny<string>()))
+            .Returns("scifi");
+
+        var result = vm.InstallPackZip("C:\\test\\pack.zip");
+
+        Assert.True(result);
+        _soundPackManagerMock.Verify(m => m.Refresh(), Times.AtLeast(2)); // Initial load + after install
+        _trayIconManagerMock.Verify(t => t.ShowNotification("Shooting Keyboard", It.Is<string>(s => s.Contains("scifi")), BalloonIcon.Info), Times.Once);
+    }
+
+    [Fact]
+    public void ExportSelectedPackToZip_ExportsSelectedPack()
+    {
+        var vm = CreateViewModel();
+        vm.SelectedPack = _testPacks[0]; // warzone
+
+        var result = vm.ExportSelectedPackToZip("C:\\test\\warzone.zip");
+
+        Assert.True(result);
+        _packImportExportServiceMock.Verify(p => p.ExportToZip(_testPacks[0], "C:\\test\\warzone.zip"), Times.Once);
+        _trayIconManagerMock.Verify(t => t.ShowNotification("Shooting Keyboard", It.Is<string>(s => s.Contains("Warzone")), BalloonIcon.Info), Times.Once);
     }
 }

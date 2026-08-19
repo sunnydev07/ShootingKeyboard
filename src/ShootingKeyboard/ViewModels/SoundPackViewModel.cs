@@ -16,6 +16,8 @@ public sealed partial class SoundPackViewModel : ObservableObject
     private readonly IAudioEngine _audioEngine;
     private readonly IConfigService _configService;
     private readonly ISoundPackValidator _soundPackValidator;
+    private readonly ISoundPackImportExportService _packImportExportService;
+    private readonly ITrayIconManager _trayIconManager;
 
     public ObservableCollection<SoundPack> Packs { get; } = new();
     public ObservableCollection<SoundPackValidationIssue> SelectedPackIssues { get; } = new();
@@ -38,12 +40,16 @@ public sealed partial class SoundPackViewModel : ObservableObject
         ISoundPackManager soundPackManager,
         IAudioEngine audioEngine,
         IConfigService configService,
-        ISoundPackValidator soundPackValidator)
+        ISoundPackValidator soundPackValidator,
+        ISoundPackImportExportService packImportExportService,
+        ITrayIconManager trayIconManager)
     {
         _soundPackManager = soundPackManager;
         _audioEngine = audioEngine;
         _configService = configService;
         _soundPackValidator = soundPackValidator;
+        _packImportExportService = packImportExportService;
+        _trayIconManager = trayIconManager;
 
         LoadPacks();
     }
@@ -145,6 +151,47 @@ public sealed partial class SoundPackViewModel : ObservableObject
                 }
                 _audioEngine.Play(soundId, sound.Volume);
             }
+        }
+    }
+
+    public bool InstallPackZip(string zipFilePath)
+    {
+        try
+        {
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var packsDir = Path.Combine(appData, "ShootingKeyboard", "packs");
+            var installedId = _packImportExportService.InstallFromZip(zipFilePath, packsDir);
+
+            LoadPacks();
+            SelectedPack = Packs.FirstOrDefault(p => p.Id.Equals(installedId, StringComparison.OrdinalIgnoreCase)) ?? Packs.FirstOrDefault();
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Sound pack '{installedId}' installed successfully", BalloonIcon.Info);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Install failed: {ex.Message}", BalloonIcon.Error);
+            return false;
+        }
+    }
+
+    public bool ExportSelectedPackToZip(string zipFilePath)
+    {
+        if (SelectedPack == null)
+        {
+            _trayIconManager.ShowNotification("Shooting Keyboard", "No sound pack selected to export", BalloonIcon.Warning);
+            return false;
+        }
+
+        try
+        {
+            _packImportExportService.ExportToZip(SelectedPack, zipFilePath);
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Pack '{SelectedPack.Name}' exported successfully", BalloonIcon.Info);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Export failed: {ex.Message}", BalloonIcon.Error);
+            return false;
         }
     }
 

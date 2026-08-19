@@ -20,6 +20,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly IComboTracker _comboTracker;
     private readonly ITrayIconManager _trayIconManager;
     private readonly IProfileManager _profileManager;
+    private readonly IProfileImportExportService _profileImportExportService;
 
     private bool _isLoading;
 
@@ -76,7 +77,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         IOverlayManager overlayManager,
         IComboTracker comboTracker,
         ITrayIconManager trayIconManager,
-        IProfileManager profileManager)
+        IProfileManager profileManager,
+        IProfileImportExportService profileImportExportService)
     {
         _configService = configService;
         _soundPackManager = soundPackManager;
@@ -87,6 +89,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _comboTracker = comboTracker;
         _trayIconManager = trayIconManager;
         _profileManager = profileManager;
+        _profileImportExportService = profileImportExportService;
 
         LoadFromConfig();
     }
@@ -243,6 +246,55 @@ public sealed partial class SettingsViewModel : ObservableObject
             _soundPackManager.SetActivePack(config.ActivePackId);
 
             _trayIconManager.ShowNotification("Shooting Keyboard", $"Profile '{SelectedProfile.Name}' activated", BalloonIcon.Info);
+        }
+    }
+
+    public bool ImportProfileFromFile(string filePath)
+    {
+        try
+        {
+            var profile = _profileImportExportService.ImportProfile(filePath);
+            var config = _configService.Load();
+
+            // Resolve ID collisions
+            if (config.Profiles.Any(p => p.Id.Equals(profile.Id, StringComparison.OrdinalIgnoreCase)))
+            {
+                profile.Id = "profile_" + Guid.NewGuid().ToString("N")[..8];
+            }
+
+            config.Profiles.Add(profile);
+            _configService.Save(config);
+
+            LoadFromConfig();
+            SelectedProfile = Profiles.FirstOrDefault(p => p.Id == profile.Id);
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Profile '{profile.Name}' imported", BalloonIcon.Info);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Import failed: {ex.Message}", BalloonIcon.Error);
+            return false;
+        }
+    }
+
+    public bool ExportSelectedProfileToFile(string filePath)
+    {
+        if (SelectedProfile == null)
+        {
+            _trayIconManager.ShowNotification("Shooting Keyboard", "No profile selected to export", BalloonIcon.Warning);
+            return false;
+        }
+
+        try
+        {
+            _profileImportExportService.ExportProfile(SelectedProfile, filePath);
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Profile '{SelectedProfile.Name}' exported successfully", BalloonIcon.Info);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Export failed: {ex.Message}", BalloonIcon.Error);
+            return false;
         }
     }
 

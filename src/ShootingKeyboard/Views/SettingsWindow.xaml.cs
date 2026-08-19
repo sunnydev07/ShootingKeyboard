@@ -21,4 +21,34 @@ public partial class SettingsWindow : Window
         _viewModel.RevertRuntimeChanges();
         Close();
     }
+
+    private void ImportProfileButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "JSON Profile Files (*.json)|*.json|All Files (*.*)|*.*",
+            Title = "Import Profile"
+        };
+        if (dialog.ShowDialog() == true)
+        {
+            _viewModel.ImportProfileFromFile(dialog.FileName);
+        }
+    }
+
+    private void ExportProfileButton_Click(object sender, RoutedEventArgs e)
+    {
+        var selected = _viewModel.SelectedProfile;
+        if (selected == null) return;
+
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "JSON Profile Files (*.json)|*.json",
+            FileName = $"{selected.Name}.json",
+            Title = "Export Profile"
+        };
+        if (dialog.ShowDialog() == true)
+        {
+            _viewModel.ExportSelectedProfileToFile(dialog.FileName);
+        }
+    }
 }
