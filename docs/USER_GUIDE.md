@@ -14,16 +14,17 @@ Welcome to **Shooting Keyboard**! This guide walks you through downloading, inst
 3. [Quick Start Walkthrough](#3-quick-start-walkthrough)
 4. [System Tray Controls](#4-system-tray-controls)
 5. [Configuring Settings](#5-configuring-settings)
-   - [Sound Packs & Volume](#sound-packs--volume)
-   - [Combo Multiplier System](#combo-multiplier-system)
-   - [On-Screen Visual Overlay](#on-screen-visual-overlay)
-   - [Performance Mode](#performance-mode)
-   - [Start with Windows](#start-with-windows)
-6. [Key Binding Customization](#6-key-binding-customization)
-   - [Group Presets](#group-presets)
-   - [Custom Key Capture Mode](#custom-key-capture-mode)
-7. [Adding Custom Sound Packs](#7-adding-custom-sound-packs)
-8. [Frequently Asked Questions & Troubleshooting](#8-frequently-asked-questions--troubleshooting)
+   - [Profiles Management & Import/Export](#profiles-management--importexport)
+   - [Sound Packs, Audio Routing & Volume](#sound-packs-audio-routing--volume)
+   - [Key Repeat & Cooldown Filtering](#key-repeat--cooldown-filtering)
+   - [Visual Overlay Customization](#visual-overlay-customization)
+   - [Quiet Hours (Auto-Mute)](#quiet-hours-auto-mute)
+   - [Performance Mode & Windows Startup](#performance-mode--windows-startup)
+6. [Per-Application & Game Rules](#6-per-application--game-rules)
+7. [Key Binding & Volume Customization](#7-key-binding--volume-customization)
+8. [Managing Sound Packs (.ZIP Import & Export)](#8-managing-sound-packs-zip-import--export)
+9. [Runtime Diagnostics Dashboard](#9-runtime-diagnostics-dashboard)
+10. [Frequently Asked Questions & Troubleshooting](#10-frequently-asked-questions--troubleshooting)
 
 ---
 
@@ -33,7 +34,7 @@ Welcome to **Shooting Keyboard**! This guide walks you through downloading, inst
 
 ### System Requirements:
 - **Operating System**: Windows 10 or Windows 11 (64-bit)
-- **Audio Output**: Standard Windows audio device (Speakers / Headphones)
+- **Audio Output**: Standard Windows audio device (Speakers / Headphones / Virtual Audio Cable)
 - **RAM**: ~30–50 MB idle memory
 - **Permissions**: Standard user permissions (Administrator recommended if you type inside elevated / admin windows)
 
@@ -43,7 +44,7 @@ Welcome to **Shooting Keyboard**! This guide walks you through downloading, inst
 
 ### Option A: Portable Executable (Fastest)
 1. Download or publish the standalone single-file `ShootingKeyboard.exe`.
-   - Built output location: `src/ShootingKeyboard/bin/Release/net8.0-windows/win-x64/publish/ShootingKeyboard.exe`
+   - Built output location: `dist/ShootingKeyboard-v1.0.0-win-x64/ShootingKeyboard.exe`
 2. Move `ShootingKeyboard.exe` to a folder of your choice (e.g., `C:\Program Files\ShootingKeyboard` or `%LocalAppData%\Programs\ShootingKeyboard`).
 3. Double-click `ShootingKeyboard.exe` to launch.
 4. The application starts in the background and places an icon in your **Windows System Tray** (near the clock).
@@ -54,16 +55,13 @@ Welcome to **Shooting Keyboard**! This guide walks you through downloading, inst
 If you have the source repository and [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) installed:
 
 ```powershell
-# 1. Open PowerShell in the project root directory
-cd "C:\Users\sunny\Desktop\Shooting Keyboard"
-
-# 2. Build the solution
+# 1. Build the solution
 dotnet build -c Release
 
-# 3. Publish a self-contained single-file executable
-dotnet publish src/ShootingKeyboard/ShootingKeyboard.csproj -c Release -r win-x64 --self-contained true
+# 2. Publish a self-contained single-file executable
+dotnet publish src/ShootingKeyboard/ShootingKeyboard.csproj -c Release -r win-x64 --self-contained true -o dist/ShootingKeyboard-v1.0.0-win-x64
 
-# 4. Run the application
+# 3. Run the application
 dotnet run --project src/ShootingKeyboard/ShootingKeyboard.csproj
 ```
 
@@ -97,17 +95,19 @@ This produces `ShootingKeyboard-1.0.0.msi` for clean single-click installation a
 
 ## 4. System Tray Controls
 
-The app lives quietly in your system tray:
+The app lives quietly in your system tray with rich quick-action submenus:
 
-![System Tray](https://via.placeholder.com/16/FF5722/FFFFFF?text=SK)
-
-| Action | Result |
+| Tray Item | Description |
 |---|---|
-| **Left-Click Tray Icon** | Opens the **Settings** window |
-| **Right-Click → Settings** | Opens the **Settings** window |
-| **Right-Click → Mute/Unmute** | Instantly toggles sound effects on/off |
-| **Right-Click → Pause/Resume** | Pauses or resumes global keyboard interception |
-| **Right-Click → Exit** | Cleanly shuts down the application |
+| **Settings & Dashboard** | Opens the main configuration dashboard |
+| **Diagnostics** | Opens the live diagnostic window (hook latency, audio events, rules) |
+| **Profiles ▶** | Quickly switch between your saved profiles |
+| **Sound Packs ▶** | Switch the active sound pack on the fly |
+| **Volume ▶** | Quick presets: 25%, 50%, 75%, 100% |
+| **Toggle Overlay** | Instantly show or hide the visual overlay |
+| **Mute/Unmute Sounds** | Instantly silence or restore audio |
+| **Pause/Resume Interception** | Temporarily detach the global keyboard hook |
+| **Exit Application** | Cleanly shuts down Shooting Keyboard |
 
 ---
 
@@ -115,126 +115,95 @@ The app lives quietly in your system tray:
 
 Open **Settings** from the tray icon to adjust your preferences:
 
-### Sound Packs & Volume
-- **Active Sound Pack**: Choose between bundled packs:
-  - 💥 **Warzone**: Realistic tactical assault rifle shots, heavy shotgun blasts, and grenade detonations.
-  - ⚡ **Sci-Fi**: Futuristic blaster pulses, plasma discharges, and warp explosions.
-  - 🕹️ **Retro Arcade**: Authentic 8-bit chiptune key blips, jump chimes, coin collects, and 8-bit explosions.
-- **Master Volume**: Adjust audio level from 0% to 100%.
-- **Test Button**: Audition the selected pack's primary sound immediately.
+### Profiles Management & Import/Export
+- Create distinct profiles for **Gaming**, **Streaming**, **Coding**, or **Office**.
+- Switch profiles instantly with live setting application.
+- Export profiles to `.json` files to share with friends or backup.
+- Import profiles with automatic safety validation.
 
-### Combo Multiplier System
-- As you type rapidly, Shooting Keyboard counts your active typing streak!
-- **Combo Window (ms)**: Controls how long a pause can last before the combo resets (default: 400 ms).
-- **Escalating Tiers**:
-  - **Tier 1 (5+ keys)**: Enhanced fire + pitch boost
-  - **Tier 2 (10+ keys)**: Extreme fire + pitch boost
-  - **Tier 3 (20+ keys)**: Overload fire / minigun barrage
-  - **Tier 4 (40+ keys)**: Maximum artillery strike / boss defeat
+### Sound Packs, Audio Routing & Volume
+- **Active Sound Pack**: Select between 7 built-in packs or custom packs.
+- **Audio Output Device**: Choose **System Default** or route audio directly to headphones, specific sound cards, or streaming audio channels (e.g. Voicemeeter).
+- **Master Volume**: Smooth slider for global gain from 0% to 100%.
 
-### On-Screen Visual Overlay
-- **Show On-Screen Ripple & Combo Overlay**: Displays a sleek ripple animation at your cursor position on each keypress and an arcade-style combo badge showing your current multiplier and tier.
-- Transparent and 100% click-through (`WS_EX_TRANSPARENT`).
+### Key Repeat & Cooldown Filtering
+- **Ignore held-key repeat events**: Suppress machine-gun sound spam when holding down keys like Backspace or arrow keys.
+- **Global Sound Cooldown (ms)**: Enforce a minimum interval between consecutive sounds (0–200 ms).
 
-### Performance Mode
-- Check **Performance Mode** during competitive gaming or low-resource sessions:
-  - Disables visual ripple animations and overlays.
-  - Minimizes CPU usage to near 0%.
-  - Optimizes audio buffers for sub-10ms latency.
+### Visual Overlay Customization
+- **Key Ripple Effect**: Toggle visual ripple circle on keystroke.
+- **Combo Counter**: Toggle combo counter multiplier badge.
+- **Ripple Hex Color**: Customize the ripple color (e.g., `#FFA500`, `#00FFFF`, `#FF0055`).
+- **Combo Position**: Choose placement on screen: `TopCenter`, `TopLeft`, `TopRight`, `BottomCenter`.
+- **Overlay Scale**: Resize overlay from 0.5x to 2.0x.
 
-### Start with Windows
-- Check **Start Shooting Keyboard with Windows** to automatically launch the app in the background when your PC boots.
+### Quiet Hours (Auto-Mute)
+- Automatically mute keyboard sounds during specific hours of the day (e.g., 22:00 to 08:00) across midnight or during custom ranges.
 
----
-
-## 6. Key Binding Customization
-
-Click **Customize Key Bindings...** in the Settings window:
-
-### Group Presets
-Easily assign an entire category of keys to any sound in your sound pack:
-- **Letters**: Keys A–Z
-- **WASD**: Movement keys
-- **Space**: Spacebar
-- **Enter**: Enter / Return
-- **Numbers**: Keys 0–9
-- **Arrows**: Navigation arrows
-- **Modifiers**: Shift, Ctrl, Alt, Windows
-- **F-Keys**: F1 through F24
-- **Numpad & Navigation**: Keypad and Ins/Del/Home/End/PgUp/PgDn
-
-### Custom Key Capture Mode
-Want a specific sound for just one key (e.g. `BackSpace` or `Escape`)?
-1. Switch to the **Custom Per-Key Bindings** tab.
-2. Click **Capture Key**.
-3. Press the desired key on your keyboard.
-4. Select the sound effect from the dropdown.
-5. Click **Apply Bindings**.
+### Performance Mode & Windows Startup
+- **Performance Mode**: Strips visual effects and optimizes thread priority for gaming.
+- **Start with Windows**: Automatically start minimized in the tray on boot.
 
 ---
 
-## 7. Adding Custom Sound Packs
+## 6. Per-Application & Game Rules
 
-You can add your own custom sound packs in minutes:
+Click **Per-App Rules...** in Settings to customize audio behavior per application:
 
-1. Open the Sound Packs folder:
-   - In the **Sound Pack Manager** window, click **Open Packs Folder**, or navigate to:
-     ```
-     %AppData%\ShootingKeyboard\packs
-     ```
-2. Create a new subfolder (e.g. `LaserSwords`).
-3. Add your sound files (`.wav` or `.mp3`).
-4. Create a `pack.json` file inside the folder:
-
-```json
-{
-  "id": "laserswords",
-  "name": "Laser Swords",
-  "author": "MyName",
-  "description": "Lightsaber swings and plasma hums.",
-  "defaults": {
-    "volume": 0.85,
-    "comboWindowMs": 400
-  },
-  "sounds": [
-    {
-      "id": "saber_swing",
-      "displayName": "Saber Swing",
-      "file": "swing.wav",
-      "volume": 1.0
-    },
-    {
-      "id": "saber_clash",
-      "displayName": "Saber Clash",
-      "file": "clash.wav",
-      "group": "Enter",
-      "volume": 1.0
-    }
-  ]
-}
-```
-5. Reopen the **Sound Pack Manager** in Shooting Keyboard — your new pack will appear automatically!
+- **Target Process Name** (e.g., `Discord.exe`, `VALORANT-Win64-Shipping.exe`, `devenv.exe`) or Window Title.
+- **Action**:
+  - **Mute Audio**: Keep interception running silently.
+  - **Disable Interception**: Stop hook while app is in focus.
+  - **Override Sound Pack**: Switch to a specific sound pack automatically when that app is focused.
 
 ---
 
-## 8. Frequently Asked Questions & Troubleshooting
+## 7. Key Binding & Volume Customization
+
+Click **Customize Key Bindings...** in Settings:
+
+### Group Bindings & Volume
+- Assign sounds and volume multipliers per key group: `WASD`, `Letters`, `Space`, `Enter`, `Numbers`, `Arrows`, `Modifiers`, `F-Keys`, `Numpad`.
+
+### Custom Per-Key Capture
+1. Switch to the **Custom Key Bindings** tab.
+2. Click **Capture Key** and press any physical key.
+3. Assign a specific sound and individual volume multiplier.
+
+---
+
+## 8. Managing Sound Packs (.ZIP Import & Export)
+
+Click **Manage Sound Packs...** in Settings:
+
+- **Browse & Preview**: Audition any sound and review combo tiers.
+- **Install from ZIP**: Click **Install Pack (.zip)...** to install a packaged community pack instantly.
+- **Export to ZIP**: Select any pack and click **Export Pack (.zip)...** to package it for distribution.
+- **Validation Alerts**: Clear error indicators if audio files are missing or metadata is invalid.
+
+---
+
+## 9. Runtime Diagnostics Dashboard
+
+Access **Diagnostics** from the tray context menu:
+- Live hook latency (ms) and event timestamps.
+- Audio engine device status and active sample cache size.
+- Last key pressed, virtual key code, resolved sound ID, and playback outcome.
+- Evaluated foreground application rule results.
+
+---
+
+## 10. Frequently Asked Questions & Troubleshooting
 
 ### Q: Why do I hear no sound when typing?
 1. Check that **Enabled** is checked in Settings.
 2. Check that **Mute Sound Effects** is unchecked.
-3. Check your Windows default playback device and volume mixer.
-4. Verify that Shooting Keyboard is running in the system tray.
+3. Check that **Quiet Hours** is not active.
+4. Verify your selected **Audio Output Device** in Settings.
 
-### Q: Keystrokes are not making sound when I type in Command Prompt or Task Manager (Administrator)?
-- Windows security (UIPI) prevents standard user applications from intercepting input in elevated Administrator windows.
+### Q: Keystrokes are not making sound in elevated Administrator windows?
+- Windows security (UIPI) isolates elevated windows from standard user hooks.
 - **Solution**: Right-click `ShootingKeyboard.exe` and select **Run as administrator**.
-
-### Q: How do I reset all settings to default?
-- Open Settings and click **Reset Defaults** in the bottom-left corner.
-
-### Q: How do I uninstall Shooting Keyboard?
-- **Portable version**: Right-click the tray icon → **Exit**, then delete the application folder and `%AppData%\ShootingKeyboard`.
-- **MSI version**: Open Windows **Settings → Installed Apps** → Select **Shooting Keyboard** → Click **Uninstall**.
 
 ---
 

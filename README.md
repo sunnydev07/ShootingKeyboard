@@ -9,8 +9,8 @@
 <p align="center">
   <a href="https://github.com/sunnydev07/ShootingKeyboard/releases/latest"><img src="https://img.shields.io/github/v/release/sunnydev07/ShootingKeyboard?color=brightgreen&label=Download%20Latest%20v1.0.0" alt="Download Latest Release" /></a>
   <a href="https://dotnet.microsoft.com/download/dotnet/8.0"><img src="https://img.shields.io/badge/.NET-8.0%20WPF-blueviolet.svg" alt=".NET 8.0 WPF" /></a>
-  <a href="https://github.com/sunnydev07/ShootingKeyboard/blob/main/LICENSE"><img src="https://img.shields.io/badge/Platform-Windows%20x64-0078d4.svg" alt="Windows x64" /></a>
-  <a href="#license"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+  <a href="https://github.com/sunnydev07/ShootingKeyboard/blob/main/LICENSE.txt"><img src="https://img.shields.io/badge/Platform-Windows%20x64-0078d4.svg" alt="Windows x64" /></a>
+  <a href="LICENSE.txt"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
 </p>
 
 ---
@@ -29,16 +29,23 @@ Shooting Keyboard comes with **7 built-in, studio-crafted sound packs**:
 
 ---
 
-## Key Features
+## 🚀 Key Features
 
 - **System-Wide Key Interception**: Uses native Win32 low-level keyboard hooks (`WH_KEYBOARD_LL`) running on a dedicated message-pump thread. Intercepts every keystroke in games, IDEs, browsers, and terminal windows without UI lag.
 - **Ultra-Low Latency Audio**: NAudio Wasapi / DirectSound / WaveOut event-driven mixer with pre-cached float PCM memory buffers.
+- **Audio Output Device Routing**: Route sound effects directly to specific headphones, speakers, or virtual audio devices without changing Windows default output.
+- **Profiles & Quick Switching**: Create, switch, import, and export separate configuration profiles for gaming, coding, streaming, or office work.
+- **Per-App & Per-Game Rules**: Automatically mute sounds, disable interception, or activate dedicated sound packs based on the active foreground application.
+- **Sound Clip Random Variants**: Support for multiple randomized audio samples per key to eliminate repetition fatigue.
+- **Sound Pack Zip Import & Export**: Install community sound packs directly from `.zip` files and export your custom packs with one click.
+- **Sound Pack Schema Validator**: Automatic linting and validation of sound packs with actionable error diagnostics.
+- **Key Repeat & Spam Filtering**: Optional suppression of held-down key repeats and configurable global key spam cooldowns.
+- **Group & Custom Volume Overrides**: Fine-tune volume levels individually per key group (WASD, Space, Enter, etc.) or per virtual key.
 - **Combo Multiplier System**: Escalates sound tiers and pitch dynamically during rapid typing streaks.
-- **On-Screen Visual Overlay**: Transparent, click-through (`WS_EX_TRANSPARENT | WS_EX_LAYERED`) top-most window displaying key ripples and combo meters.
-- **Key Binding Customization**: Custom mappings by logical key groups (WASD, Letters, Space, Enter, Numbers, F-Keys, Arrows) or individual key capture.
-- **Sound Pack Manager**: Easily drop custom sound packs into `%AppData%/ShootingKeyboard/packs`.
-- **System Tray Background Operation**: Runs silently in the tray with quick toggles (Mute, Pause/Resume, Settings, Exit).
-- **Windows Startup Integration**: Registry integration to start automatically on login.
+- **On-Screen Visual Overlay**: Transparent, click-through (`WS_EX_TRANSPARENT | WS_EX_LAYERED`) top-most window displaying customizable key ripples and combo meters (scale, color, position presets).
+- **Quiet Hours**: Schedule auto-mute periods for late nights or focused work hours.
+- **Tray Quick Controls**: Switch profiles, sound packs, volume levels, and overlays instantly right from the system tray menu.
+- **Live Diagnostics Window**: Real-time inspection of hook events, active audio streams, latency stats, and rule evaluations.
 - **Performance Mode**: Strips visual effects and optimizes thread priority for competitive gaming sessions.
 
 ---
@@ -50,15 +57,14 @@ ShootingKeyboard/
 ├── ShootingKeyboard.sln
 ├── src/
 │   ├── ShootingKeyboard/                 # Main WPF Application
-│   │   ├── Models/                      # AppConfig, SoundPack, KeyEvent, KeyBinding
-│   │   ├── Services/                    # KeyboardHook, AudioEngine, SoundPackManager,
-│   │   │                                # ComboTracker, OverlayManager, TrayIconManager,
-│   │   │                                # StartupManager, BindingResolver, ConfigService
-│   │   ├── ViewModels/                  # Main, Settings, KeyBinding, SoundPack ViewModels
-│   │   ├── Views/                       # SettingsWindow, KeyBindingWindow, SoundPackWindow
-│   │   ├── Overlay/                     # OverlayWindow (transparent top-most visualizer)
+│   │   ├── Models/                      # AppConfig, AppProfile, AppRule, SoundPack, OverlayConfig, QuietHours
+│   │   ├── Services/                    # KeyboardHook, AudioEngine, SoundPackManager, ProfileManager,
+│   │   │                                # AppRuleEvaluator, SoundPackValidator, ImportExport, QuietHours
+│   │   ├── ViewModels/                  # Main, Settings, KeyBinding, SoundPack, Diagnostics, AppRules
+│   │   ├── Views/                       # SettingsWindow, KeyBindingWindow, SoundPackWindow, AppRulesWindow
+│   │   ├── Overlay/                     # OverlayWindow (transparent click-through visualizer)
 │   │   └── Resources/                   # Embedded default sound packs and application icons
-│   └── ShootingKeyboard.Tests/           # xUnit Unit & Integration Test Suite (113 tests)
+│   └── ShootingKeyboard.Tests/           # xUnit Unit & Integration Test Suite (211 tests)
 ├── sound-packs/                         # Standalone bundled sound packs
 │   ├── AssaultRifle/
 │   ├── HeavyGunshot/
@@ -85,7 +91,7 @@ ShootingKeyboard/
 # Restore and build the solution
 dotnet build -c Release
 
-# Run the full unit test suite (113 tests)
+# Run the full unit test suite (211 tests)
 dotnet test
 ```
 
@@ -98,22 +104,18 @@ dotnet run --project src/ShootingKeyboard/ShootingKeyboard.csproj
 
 ## Creating the Single-File Portable Executable & Installer
 
+### 1. Publish Single-File Self-Contained Binary:
 ```powershell
-# 1. Publish standalone portable single-file executable
 dotnet publish src/ShootingKeyboard/ShootingKeyboard.csproj -c Release -r win-x64 --self-contained true -o dist/ShootingKeyboard-v1.0.0-win-x64
+```
 
-# 2. Build MSI using WixSharp script
+### 2. Build Windows MSI Installer:
+```powershell
 dotnet-script installer/BuildInstaller.csx
 ```
 
 ---
 
-## Documentation
-
-- 📖 **[User & Installation Guide](docs/USER_GUIDE.md)** — Complete setup walkthrough, tray guide, settings, and FAQs.
-- 🎵 **[Sound Pack Format Specification](docs/SOUND_PACK_FORMAT.md)** — Schema and instructions for creating custom sound packs.
-
----
-
 ## License
-MIT License
+
+Shooting Keyboard is open-source software licensed under the [MIT License](LICENSE.txt).
