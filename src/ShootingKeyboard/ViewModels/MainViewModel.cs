@@ -222,6 +222,17 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         string audioId = clip.AudioId;
         float volume = clip.Volume;
 
+        var keyGroup = KeyGroups.GetGroupForKey(e.KeyCode);
+        if (!string.IsNullOrEmpty(keyGroup) && config.GroupVolumeOverrides != null && config.GroupVolumeOverrides.TryGetValue(keyGroup, out var grpVol))
+        {
+            volume *= grpVol;
+        }
+
+        if (config.KeyVolumeOverrides != null && config.KeyVolumeOverrides.TryGetValue(e.KeyCode, out var keyVol))
+        {
+            volume *= keyVol;
+        }
+
         if (!_audioEngine.IsSoundLoaded(audioId))
         {
             if (File.Exists(clip.FilePath))

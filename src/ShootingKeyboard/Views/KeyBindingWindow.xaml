@@ -81,8 +81,9 @@
                                 <Border Background="#1E222B" CornerRadius="4" Padding="10,6" Margin="0,4">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="130"/>
+                                            <ColumnDefinition Width="110"/>
                                             <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="110"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text="{Binding GroupName}" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="14"/>
@@ -92,7 +93,15 @@
                                                   DisplayMemberPath="DisplayName"
                                                   Height="28"
                                                   Margin="0,0,8,0"/>
-                                        <Button Grid.Column="2"
+                                        <Grid Grid.Column="2" Margin="0,0,8,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="32"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Slider Minimum="0" Maximum="1" Value="{Binding Volume}" TickFrequency="0.05" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Volume, StringFormat={}{0:P0}}" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+                                        <Button Grid.Column="3"
                                                 Content="▶"
                                                 ToolTip="Preview Sound"
                                                 Command="{Binding DataContext.PlayPreviewCommand, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -152,8 +161,9 @@
                                     <Border Background="#1E222B" CornerRadius="4" Padding="10,6" Margin="0,4">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="110"/>
+                                                <ColumnDefinition Width="100"/>
                                                 <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="110"/>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
@@ -164,7 +174,15 @@
                                                       DisplayMemberPath="DisplayName"
                                                       Height="28"
                                                       Margin="0,0,8,0"/>
-                                            <Button Grid.Column="2"
+                                            <Grid Grid.Column="2" Margin="0,0,8,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="32"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Slider Minimum="0" Maximum="1" Value="{Binding Volume}" TickFrequency="0.05" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Volume, StringFormat={}{0:P0}}" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            </Grid>
+                                            <Button Grid.Column="3"
                                                     Content="▶"
                                                     ToolTip="Preview Sound"
                                                     Command="{Binding DataContext.PlayPreviewCommand, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -172,7 +190,7 @@
                                                     Width="32"
                                                     Height="28"
                                                     Margin="0,0,6,0"/>
-                                            <Button Grid.Column="3"
+                                            <Button Grid.Column="4"
                                                     Content="✕"
                                                     ToolTip="Remove Binding"
                                                     Command="{Binding DataContext.RemoveKeyBindingCommand, RelativeSource={RelativeSource AncestorType=Window}}"

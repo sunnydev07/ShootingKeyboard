@@ -43,9 +43,17 @@ public class KeyBindingViewModelTests
             {
                 { 0x41, "shot_laser" } // 'A'
             },
+            KeyVolumeOverrides = new Dictionary<int, float>
+            {
+                { 0x41, 0.6f }
+            },
             GroupBindings = new Dictionary<string, string>
             {
                 { KeyGroups.WASD, "shot_heavy" }
+            },
+            GroupVolumeOverrides = new Dictionary<string, float>
+            {
+                { KeyGroups.WASD, 0.8f }
             }
         };
 
@@ -72,10 +80,12 @@ public class KeyBindingViewModelTests
         Assert.Equal("A", customItem.KeyName);
         Assert.NotNull(customItem.SelectedSound);
         Assert.Equal("shot_laser", customItem.SelectedSound.Id);
+        Assert.Equal(0.6f, customItem.Volume);
 
         var wasdGroup = vm.GroupBindings.First(g => g.GroupName == KeyGroups.WASD);
         Assert.NotNull(wasdGroup.SelectedSound);
         Assert.Equal("shot_heavy", wasdGroup.SelectedSound.Id);
+        Assert.Equal(0.8f, wasdGroup.Volume);
     }
 
     [Fact]
@@ -122,6 +132,7 @@ public class KeyBindingViewModelTests
         Assert.NotNull(addedItem);
         Assert.Equal("B", addedItem.KeyName);
         Assert.Equal("shot_default", addedItem.SelectedSound?.Id);
+        Assert.Equal(1.0f, addedItem.Volume);
     }
 
     [Fact]
@@ -188,7 +199,7 @@ public class KeyBindingViewModelTests
     }
 
     [Fact]
-    public void Save_PersistsBindingsAndInvokesRequestClose()
+    public void Save_PersistsBindingsAndVolumeOverridesAndInvokesRequestClose()
     {
         var config = new AppConfig
         {
@@ -202,13 +213,15 @@ public class KeyBindingViewModelTests
         var closeRequested = false;
         vm.RequestClose += () => closeRequested = true;
 
-        // Change a group binding
+        // Change a group binding & volume
         var spaceGroup = vm.GroupBindings.First(g => g.GroupName == KeyGroups.Space);
         spaceGroup.SelectedSound = _testPack.Sounds[1]; // shot_laser
+        spaceGroup.Volume = 0.75f;
 
-        // Change a custom key binding
+        // Change a custom key binding & volume
         var customKey = vm.CustomKeyBindings.First();
         customKey.SelectedSound = _testPack.Sounds[2]; // shot_heavy
+        customKey.Volume = 0.5f;
 
         // Act
         vm.Save();
@@ -216,7 +229,9 @@ public class KeyBindingViewModelTests
         // Verify config saved
         _configServiceMock.Verify(c => c.Save(It.Is<AppConfig>(cfg =>
             cfg.GroupBindings[KeyGroups.Space] == "shot_laser" &&
-            cfg.KeyBindings[0x41] == "shot_heavy"
+            cfg.GroupVolumeOverrides[KeyGroups.Space] == 0.75f &&
+            cfg.KeyBindings[0x41] == "shot_heavy" &&
+            cfg.KeyVolumeOverrides[0x41] == 0.5f
         )), Times.Once);
 
         Assert.True(closeRequested);

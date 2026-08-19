@@ -63,8 +63,9 @@ public sealed partial class KeyBindingViewModel : ObservableObject
         {
             var currentSoundId = config.GroupBindings.GetValueOrDefault(groupName, string.Empty);
             var selectedSound = AvailableSounds.FirstOrDefault(s => s.Id.Equals(currentSoundId, StringComparison.OrdinalIgnoreCase));
+            var volume = config.GroupVolumeOverrides.GetValueOrDefault(groupName, 1.0f);
 
-            var item = new GroupBindingItem(groupName, AvailableSounds, selectedSound);
+            var item = new GroupBindingItem(groupName, AvailableSounds, selectedSound, volume);
             GroupBindings.Add(item);
         }
 
@@ -74,7 +75,8 @@ public sealed partial class KeyBindingViewModel : ObservableObject
         {
             var keyName = GetKeyName(keyCode);
             var selectedSound = AvailableSounds.FirstOrDefault(s => s.Id.Equals(soundId, StringComparison.OrdinalIgnoreCase));
-            CustomKeyBindings.Add(new KeyBindingItem(keyCode, keyName, AvailableSounds, selectedSound));
+            var volume = config.KeyVolumeOverrides.GetValueOrDefault(keyCode, 1.0f);
+            CustomKeyBindings.Add(new KeyBindingItem(keyCode, keyName, AvailableSounds, selectedSound, volume));
         }
     }
 
@@ -116,7 +118,7 @@ public sealed partial class KeyBindingViewModel : ObservableObject
             if (existing == null)
             {
                 var defaultSound = AvailableSounds.FirstOrDefault();
-                var newItem = new KeyBindingItem(e.KeyCode, GetKeyName(e.KeyCode), AvailableSounds, defaultSound);
+                var newItem = new KeyBindingItem(e.KeyCode, GetKeyName(e.KeyCode), AvailableSounds, defaultSound, 1.0f);
                 CustomKeyBindings.Add(newItem);
             }
         }
@@ -154,23 +156,33 @@ public sealed partial class KeyBindingViewModel : ObservableObject
     {
         var config = _configService.Load();
 
-        // Update group bindings
+        // Update group bindings and volume overrides
         config.GroupBindings.Clear();
+        config.GroupVolumeOverrides.Clear();
         foreach (var group in GroupBindings)
         {
             if (group.SelectedSound != null && !string.IsNullOrEmpty(group.SelectedSound.Id))
             {
                 config.GroupBindings[group.GroupName] = group.SelectedSound.Id;
             }
+            if (Math.Abs(group.Volume - 1.0f) > 0.001f)
+            {
+                config.GroupVolumeOverrides[group.GroupName] = group.Volume;
+            }
         }
 
-        // Update key bindings
+        // Update key bindings and volume overrides
         config.KeyBindings.Clear();
+        config.KeyVolumeOverrides.Clear();
         foreach (var key in CustomKeyBindings)
         {
             if (key.SelectedSound != null && !string.IsNullOrEmpty(key.SelectedSound.Id))
             {
                 config.KeyBindings[key.KeyCode] = key.SelectedSound.Id;
+            }
+            if (Math.Abs(key.Volume - 1.0f) > 0.001f)
+            {
+                config.KeyVolumeOverrides[key.KeyCode] = key.Volume;
             }
         }
 
@@ -216,11 +228,15 @@ public sealed partial class GroupBindingItem : ObservableObject
     [ObservableProperty]
     private SoundEntry? _selectedSound;
 
-    public GroupBindingItem(string groupName, ObservableCollection<SoundEntry> sounds, SoundEntry? selected)
+    [ObservableProperty]
+    private float _volume = 1.0f;
+
+    public GroupBindingItem(string groupName, ObservableCollection<SoundEntry> sounds, SoundEntry? selected, float volume = 1.0f)
     {
         GroupName = groupName;
         AvailableSounds = sounds;
         SelectedSound = selected;
+        Volume = volume;
     }
 }
 
@@ -233,11 +249,15 @@ public sealed partial class KeyBindingItem : ObservableObject
     [ObservableProperty]
     private SoundEntry? _selectedSound;
 
-    public KeyBindingItem(int keyCode, string keyName, ObservableCollection<SoundEntry> sounds, SoundEntry? selected)
+    [ObservableProperty]
+    private float _volume = 1.0f;
+
+    public KeyBindingItem(int keyCode, string keyName, ObservableCollection<SoundEntry> sounds, SoundEntry? selected, float volume = 1.0f)
     {
         KeyCode = keyCode;
         KeyName = keyName;
         AvailableSounds = sounds;
         SelectedSound = selected;
+        Volume = volume;
     }
 }

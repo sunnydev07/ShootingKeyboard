@@ -154,6 +154,33 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public void OnKeyPressed_WithVolumeOverrides_CalculatesEffectiveVolumeCorrectly()
+    {
+        var config = new AppConfig
+        {
+            IsEnabled = true,
+            IsMuted = false,
+            ActivePackId = "warzone",
+            KeyVolumeOverrides = new Dictionary<int, float> { { 0x41, 0.5f } }, // 'A' (WASD group)
+            GroupVolumeOverrides = new Dictionary<string, float> { { KeyGroups.WASD, 0.8f } }
+        };
+        var vm = CreateViewModel(config);
+        vm.Initialize();
+
+        _bindingResolverMock.Setup(r => r.ResolveSound(0x41, _testPack, It.IsAny<AppConfig>())).Returns("shot_default");
+        _comboTrackerMock.SetupGet(c => c.CurrentTier).Returns(0);
+        _variantSelectorMock.Setup(v => v.SelectClip(It.Is<SoundEntry>(s => s.Id == "shot_default")))
+            .Returns(new SelectedSoundClip { AudioId = "shot_default", FilePath = "shot.wav", Volume = 1.0f });
+        _audioEngineMock.Setup(a => a.IsSoundLoaded("shot_default")).Returns(true);
+
+        // Act
+        _keyboardHookMock.Raise(k => k.KeyPressed += null, new KeyPressedEventArgs(new KeyEvent(0x41, true)));
+
+        // Effective volume = 1.0 (clip) * 0.8 (WASD group) * 0.5 (key 0x41) = 0.40f
+        _audioEngineMock.Verify(a => a.PlayWithPitch("shot_default", It.Is<float>(v => Math.Abs(v - 0.4f) < 0.001f), 1.0f), Times.Once);
+    }
+
+    [Fact]
     public void OnKeyPressed_WhenKeyUp_IgnoredAndRecordedInDiagnostics()
     {
         var vm = CreateViewModel();

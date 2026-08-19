@@ -69,6 +69,18 @@ public sealed class AppConfig
     public Dictionary<string, string> GroupBindings { get; set; } = new();
 
     /// <summary>
+    /// Per-group volume overrides (GroupName -> volume 0.0-1.0)
+    /// </summary>
+    [JsonPropertyName("groupVolumeOverrides")]
+    public Dictionary<string, float> GroupVolumeOverrides { get; set; } = new();
+
+    /// <summary>
+    /// Per-key volume overrides (VirtualKeyCode -> volume 0.0-1.0)
+    /// </summary>
+    [JsonPropertyName("keyVolumeOverrides")]
+    public Dictionary<int, float> KeyVolumeOverrides { get; set; } = new();
+
+    /// <summary>
     /// Keystroke playback filtering and repeat cooldown settings
     /// </summary>
     [JsonPropertyName("playbackFilter")]
@@ -86,6 +98,38 @@ public sealed class AppConfig
     {
         MasterVolume = Math.Clamp(MasterVolume, 0f, 1f);
         ComboWindowMs = Math.Clamp(ComboWindowMs, 50, 2000);
+
+        if (GroupVolumeOverrides != null)
+        {
+            var invalidGroups = GroupVolumeOverrides.Keys
+                .Where(k => !KeyGroups.All.Contains(k))
+                .ToList();
+            foreach (var g in invalidGroups)
+            {
+                GroupVolumeOverrides.Remove(g);
+            }
+
+            foreach (var (k, v) in GroupVolumeOverrides.ToList())
+            {
+                GroupVolumeOverrides[k] = Math.Clamp(v, 0f, 1f);
+            }
+        }
+        else
+        {
+            GroupVolumeOverrides = new();
+        }
+
+        if (KeyVolumeOverrides != null)
+        {
+            foreach (var (k, v) in KeyVolumeOverrides.ToList())
+            {
+                KeyVolumeOverrides[k] = Math.Clamp(v, 0f, 1f);
+            }
+        }
+        else
+        {
+            KeyVolumeOverrides = new();
+        }
 
         if (PlaybackFilter != null)
         {

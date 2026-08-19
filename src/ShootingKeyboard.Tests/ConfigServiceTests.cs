@@ -63,6 +63,8 @@ public class ConfigServiceTests : IDisposable
         };
         config.KeyBindings[0x41] = "laser_blaster";
         config.GroupBindings[KeyGroups.WASD] = "plasma_shot";
+        config.GroupVolumeOverrides[KeyGroups.WASD] = 0.85f;
+        config.KeyVolumeOverrides[0x41] = 0.5f;
 
         service.Save(config);
 
@@ -80,6 +82,27 @@ public class ConfigServiceTests : IDisposable
         Assert.Equal(350, loaded.ComboWindowMs);
         Assert.Equal("laser_blaster", loaded.KeyBindings[0x41]);
         Assert.Equal("plasma_shot", loaded.GroupBindings[KeyGroups.WASD]);
+        Assert.Equal(0.85f, loaded.GroupVolumeOverrides[KeyGroups.WASD]);
+        Assert.Equal(0.5f, loaded.KeyVolumeOverrides[0x41]);
+    }
+
+    [Fact]
+    public void AppConfig_Validate_ClampsVolumeOverridesAndRemovesInvalidGroups()
+    {
+        var config = new AppConfig();
+        config.GroupVolumeOverrides["InvalidGroupName"] = 0.5f;
+        config.GroupVolumeOverrides[KeyGroups.Space] = 1.5f;
+        config.GroupVolumeOverrides[KeyGroups.WASD] = -0.2f;
+        config.KeyVolumeOverrides[0x41] = 2.0f;
+        config.KeyVolumeOverrides[0x42] = -0.5f;
+
+        config.Validate();
+
+        Assert.False(config.GroupVolumeOverrides.ContainsKey("InvalidGroupName"));
+        Assert.Equal(1.0f, config.GroupVolumeOverrides[KeyGroups.Space]);
+        Assert.Equal(0.0f, config.GroupVolumeOverrides[KeyGroups.WASD]);
+        Assert.Equal(1.0f, config.KeyVolumeOverrides[0x41]);
+        Assert.Equal(0.0f, config.KeyVolumeOverrides[0x42]);
     }
 
     [Fact]
