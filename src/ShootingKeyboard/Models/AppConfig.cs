@@ -87,6 +87,18 @@ public sealed class AppConfig
     public PlaybackFilterConfig PlaybackFilter { get; set; } = new();
 
     /// <summary>
+    /// ID of the currently active profile
+    /// </summary>
+    [JsonPropertyName("activeProfileId")]
+    public string ActiveProfileId { get; set; } = "default";
+
+    /// <summary>
+    /// Available configuration profiles
+    /// </summary>
+    [JsonPropertyName("profiles")]
+    public List<AppProfile> Profiles { get; set; } = new();
+
+    /// <summary>
     /// Creates a default configuration
     /// </summary>
     public static AppConfig CreateDefault() => new();
@@ -170,6 +182,43 @@ public sealed class AppConfig
         else
         {
             PlaybackFilter = new();
+        }
+
+        if (Profiles == null)
+        {
+            Profiles = new List<AppProfile>();
+        }
+
+        if (Profiles.Count == 0)
+        {
+            Profiles.Add(new AppProfile
+            {
+                Id = "default",
+                Name = "Default",
+                MasterVolume = MasterVolume,
+                IsMuted = IsMuted,
+                IsEnabled = IsEnabled,
+                ActivePackId = ActivePackId,
+                OverlayEnabled = OverlayEnabled,
+                PerformanceMode = PerformanceMode,
+                ComboWindowMs = ComboWindowMs,
+                KeyBindings = new Dictionary<int, string>(KeyBindings ?? new()),
+                GroupBindings = new Dictionary<string, string>(GroupBindings ?? new()),
+                GroupVolumeOverrides = new Dictionary<string, float>(GroupVolumeOverrides ?? new()),
+                KeyVolumeOverrides = new Dictionary<int, float>(KeyVolumeOverrides ?? new()),
+                PlaybackFilter = new PlaybackFilterConfig
+                {
+                    IgnoreKeyRepeats = PlaybackFilter?.IgnoreKeyRepeats ?? true,
+                    GlobalCooldownMs = PlaybackFilter?.GlobalCooldownMs ?? 20,
+                    GroupCooldownMs = new Dictionary<string, int>(PlaybackFilter?.GroupCooldownMs ?? new()),
+                    KeyCooldownMs = new Dictionary<int, int>(PlaybackFilter?.KeyCooldownMs ?? new())
+                }
+            });
+        }
+
+        if (string.IsNullOrEmpty(ActiveProfileId) || !Profiles.Any(p => p.Id == ActiveProfileId))
+        {
+            ActiveProfileId = Profiles[0].Id;
         }
     }
 }

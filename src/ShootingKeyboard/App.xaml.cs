@@ -53,6 +53,7 @@ public partial class App : Application
         services.AddSingleton<IRuntimeDiagnosticsService, RuntimeDiagnosticsService>();
         services.AddSingleton<IKeyPressFilter, KeyPressFilter>();
         services.AddSingleton<ISoundVariantSelector, SoundVariantSelector>();
+        services.AddSingleton<IProfileManager, ProfileManager>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
