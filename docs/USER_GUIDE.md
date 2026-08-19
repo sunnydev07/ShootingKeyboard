@@ -44,7 +44,7 @@ Welcome to **Shooting Keyboard**! This guide walks you through downloading, inst
 
 ### Option A: Portable Executable (Fastest)
 1. Download or publish the standalone single-file `ShootingKeyboard.exe`.
-   - Built output location: `dist/ShootingKeyboard-v1.0.0-win-x64/ShootingKeyboard.exe`
+   - Built output location: `dist/ShootingKeyboard-v1.1.0-win-x64/ShootingKeyboard.exe`
 2. Move `ShootingKeyboard.exe` to a folder of your choice (e.g., `C:\Program Files\ShootingKeyboard` or `%LocalAppData%\Programs\ShootingKeyboard`).
 3. Double-click `ShootingKeyboard.exe` to launch.
 4. The application starts in the background and places an icon in your **Windows System Tray** (near the clock).
@@ -59,7 +59,7 @@ If you have the source repository and [.NET 8 SDK](https://dotnet.microsoft.com/
 dotnet build -c Release
 
 # 2. Publish a self-contained single-file executable
-dotnet publish src/ShootingKeyboard/ShootingKeyboard.csproj -c Release -r win-x64 --self-contained true -o dist/ShootingKeyboard-v1.0.0-win-x64
+dotnet publish src/ShootingKeyboard/ShootingKeyboard.csproj -c Release -r win-x64 --self-contained true -o dist/ShootingKeyboard-v1.1.0-win-x64
 
 # 3. Run the application
 dotnet run --project src/ShootingKeyboard/ShootingKeyboard.csproj
@@ -77,7 +77,7 @@ dotnet publish src/ShootingKeyboard/ShootingKeyboard.csproj -c Release -r win-x6
 # 2. Build the installer using WixSharp script
 dotnet-script installer/BuildInstaller.csx
 ```
-This produces `ShootingKeyboard-1.0.0.msi` for clean single-click installation and Start Menu shortcuts.
+This produces `ShootingKeyboard-1.1.0.msi` for clean single-click installation and Start Menu shortcuts.
 
 ---
 

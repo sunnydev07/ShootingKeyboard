@@ -33,7 +33,7 @@ var project = new Project("ShootingKeyboard",
 );
 
 project.GUID = new Guid("98A3F29B-C57E-4E6C-81B5-9B2EF91A20D1");
-project.Version = new Version("1.0.0");
+project.Version = new Version("1.1.0");
 if (System.IO.File.Exists("LICENSE.txt"))
 {
     project.LicenceFile = "LICENSE.txt";
@@ -41,5 +41,5 @@ if (System.IO.File.Exists("LICENSE.txt"))
 project.ControlPanelInfo.Manufacturer = "ShootingKeyboard";
 project.ControlPanelInfo.HelpLink = "https://github.com/sunnydev07/ShootingKeyboard";
 
-Compiler.BuildMsi(project, "ShootingKeyboard-1.0.0.msi");
-Console.WriteLine("Installer built successfully: ShootingKeyboard-1.0.0.msi");
+Compiler.BuildMsi(project, "ShootingKeyboard-1.1.0.msi");
+Console.WriteLine("Installer built successfully: ShootingKeyboard-1.1.0.msi");
