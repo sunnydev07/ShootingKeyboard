@@ -43,6 +43,7 @@ MyCustomPack/
       "id": "sound_id_1",
       "displayName": "Primary Shot",
       "file": "primary_shot.wav",
+      "variants": ["primary_shot_var1.wav", "primary_shot_var2.wav"],
       "group": null,
       "volume": 1.0,
       "isComboVariant": false

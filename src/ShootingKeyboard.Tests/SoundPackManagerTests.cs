@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ShootingKeyboard.Models;
 using ShootingKeyboard.Services;
 using Xunit;
 
@@ -58,5 +59,51 @@ public class SoundPackManagerTests
 
         var success = manager.SetActivePack("nonexistent_pack_id");
         Assert.False(success);
+    }
+
+    [Fact]
+    public void SoundPackManager_ResolvesVariantFilePathsToAbsolute()
+    {
+        var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "test_pack_" + Guid.NewGuid());
+        System.IO.Directory.CreateDirectory(tempDir);
+        try
+        {
+            var json = """
+            {
+                "id": "variant_test",
+                "name": "Variant Test",
+                "sounds": [
+                    {
+                        "id": "shot1",
+                        "file": "shot1.wav",
+                        "variants": ["var1.wav", "var2.wav"]
+                    }
+                ]
+            }
+            """;
+            var pack = System.Text.Json.JsonSerializer.Deserialize<SoundPack>(json, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })!;
+            foreach (var sound in pack.Sounds)
+            {
+                if (!System.IO.Path.IsPathRooted(sound.File))
+                    sound.File = System.IO.Path.Combine(tempDir, sound.File);
+                if (sound.Variants != null)
+                {
+                    for (int i = 0; i < sound.Variants.Count; i++)
+                    {
+                        if (!System.IO.Path.IsPathRooted(sound.Variants[i]))
+                            sound.Variants[i] = System.IO.Path.Combine(tempDir, sound.Variants[i]);
+                    }
+                }
+            }
+
+            Assert.True(System.IO.Path.IsPathRooted(pack.Sounds[0].Variants[0]));
+            Assert.True(System.IO.Path.IsPathRooted(pack.Sounds[0].Variants[1]));
+            Assert.Contains(tempDir, pack.Sounds[0].Variants[0]);
+        }
+        finally
+        {
+            if (System.IO.Directory.Exists(tempDir))
+                System.IO.Directory.Delete(tempDir, true);
+        }
     }
 }

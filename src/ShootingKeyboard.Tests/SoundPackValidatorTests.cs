@@ -328,4 +328,25 @@ public class SoundPackValidatorTests
                 File.Delete(tempFile);
         }
     }
+
+    [Fact]
+    public void Validate_MissingSoundVariantFile_ReturnsSoundVariantMissingError()
+    {
+        var (pack, tempFile) = CreateValidPackWithFile();
+        try
+        {
+            var missingVariantPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".wav");
+            pack.Sounds[0].Variants.Add(missingVariantPath);
+
+            var result = _validator.Validate(pack);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Issues, i => i.Severity == SoundPackValidationSeverity.Error && i.Code == "sound.variant.missing" && i.FilePath == missingVariantPath);
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+                File.Delete(tempFile);
+        }
+    }
 }

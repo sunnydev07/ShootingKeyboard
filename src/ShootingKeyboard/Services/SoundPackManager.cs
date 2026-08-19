@@ -87,6 +87,17 @@ public sealed class SoundPackManager : ISoundPackManager
                                     {
                                         sound.File = Path.Combine(packDir, sound.File);
                                     }
+
+                                    if (sound.Variants != null)
+                                    {
+                                        for (int i = 0; i < sound.Variants.Count; i++)
+                                        {
+                                            if (!Path.IsPathRooted(sound.Variants[i]))
+                                            {
+                                                sound.Variants[i] = Path.Combine(packDir, sound.Variants[i]);
+                                            }
+                                        }
+                                    }
                                 }
 
                                 if (!_packs.Any(p => p.Id.Equals(pack.Id, StringComparison.OrdinalIgnoreCase)))

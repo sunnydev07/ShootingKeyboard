@@ -144,6 +144,35 @@ public sealed class SoundPackValidator : ISoundPackValidator
                 }
             }
 
+            // Sound variants missing
+            if (sound.Variants != null)
+            {
+                foreach (var variant in sound.Variants)
+                {
+                    if (string.IsNullOrWhiteSpace(variant))
+                    {
+                        result.Issues.Add(new SoundPackValidationIssue
+                        {
+                            Severity = SoundPackValidationSeverity.Error,
+                            Code = "sound.variant.empty",
+                            Message = $"Sound '{sound.Id}' has an empty variant file path.",
+                            SoundId = sound.Id
+                        });
+                    }
+                    else if (!File.Exists(variant))
+                    {
+                        result.Issues.Add(new SoundPackValidationIssue
+                        {
+                            Severity = SoundPackValidationSeverity.Error,
+                            Code = "sound.variant.missing",
+                            Message = $"Sound variant file not found: {variant}",
+                            SoundId = sound.Id,
+                            FilePath = variant
+                        });
+                    }
+                }
+            }
+
             // Sound volume
             if (sound.Volume < 0f || sound.Volume > 1f)
             {

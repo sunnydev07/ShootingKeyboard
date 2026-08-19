@@ -179,6 +179,9 @@ public sealed class SoundEntry
     [JsonPropertyName("volume")]
     public float Volume { get; set; } = 1.0f;
 
+    [JsonPropertyName("variants")]
+    public List<string> Variants { get; set; } = new();
+
     [JsonPropertyName("isComboVariant")]
     public bool IsComboVariant { get; set; } = false;
 
