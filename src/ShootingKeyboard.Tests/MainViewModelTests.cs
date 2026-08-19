@@ -22,6 +22,7 @@ public class MainViewModelTests
     private readonly Mock<IStartupManager> _startupManagerMock = new();
     private readonly Mock<IRuntimeDiagnosticsService> _diagnosticsServiceMock = new();
     private readonly Mock<IKeyPressFilter> _keyPressFilterMock = new();
+    private readonly Mock<ISoundVariantSelector> _variantSelectorMock = new();
     private readonly Mock<IServiceProvider> _serviceProviderMock = new();
 
     private readonly SoundPack _testPack;
@@ -45,6 +46,9 @@ public class MainViewModelTests
 
         _keyPressFilterMock.Setup(f => f.ShouldProcess(It.Is<KeyEvent>(k => k.IsPressed), It.IsAny<AppConfig>())).Returns(true);
         _keyPressFilterMock.Setup(f => f.ShouldProcess(It.Is<KeyEvent>(k => !k.IsPressed), It.IsAny<AppConfig>())).Returns(false);
+
+        _variantSelectorMock.Setup(v => v.SelectClip(It.IsAny<SoundEntry>()))
+            .Returns((SoundEntry s) => new SelectedSoundClip { AudioId = s?.Id ?? "", FilePath = s?.File ?? "", Volume = s?.Volume ?? 1.0f });
     }
 
     private MainViewModel CreateViewModel(AppConfig? config = null)
@@ -74,6 +78,7 @@ public class MainViewModelTests
             _startupManagerMock.Object,
             _diagnosticsServiceMock.Object,
             _keyPressFilterMock.Object,
+            _variantSelectorMock.Object,
             _serviceProviderMock.Object);
     }
 
@@ -126,6 +131,26 @@ public class MainViewModelTests
         _diagnosticsServiceMock.Verify(d => d.RecordKeyEvent(It.Is<KeyEvent>(k => k.KeyCode == 0x41 && k.IsPressed)), Times.Once);
         _diagnosticsServiceMock.Verify(d => d.RecordResolvedSound(0x41, "shot_default"), Times.Once);
         _diagnosticsServiceMock.Verify(d => d.RecordPlayback("shot_default", true, "ok"), Times.Once);
+    }
+
+    [Fact]
+    public void OnKeyPressed_WithVariantSelected_PlaysSelectedVariantClip()
+    {
+        var vm = CreateViewModel();
+        vm.Initialize();
+
+        _bindingResolverMock.Setup(r => r.ResolveSound(0x41, _testPack, It.IsAny<AppConfig>())).Returns("shot_default");
+        _comboTrackerMock.SetupGet(c => c.CurrentTier).Returns(0);
+        _variantSelectorMock.Setup(v => v.SelectClip(It.Is<SoundEntry>(s => s.Id == "shot_default")))
+            .Returns(new SelectedSoundClip { AudioId = "shot_default::variant::0", FilePath = "shot_var.wav", Volume = 0.9f });
+        _audioEngineMock.Setup(a => a.IsSoundLoaded("shot_default::variant::0")).Returns(true);
+
+        // Act
+        _keyboardHookMock.Raise(k => k.KeyPressed += null, new KeyPressedEventArgs(new KeyEvent(0x41, true)));
+
+        // Assert
+        _audioEngineMock.Verify(a => a.PlayWithPitch("shot_default::variant::0", 0.9f, 1.0f), Times.Once);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback("shot_default::variant::0", true, "ok"), Times.Once);
     }
 
     [Fact]

@@ -52,6 +52,7 @@ public partial class App : Application
         services.AddSingleton<ISoundPackValidator, SoundPackValidator>();
         services.AddSingleton<IRuntimeDiagnosticsService, RuntimeDiagnosticsService>();
         services.AddSingleton<IKeyPressFilter, KeyPressFilter>();
+        services.AddSingleton<ISoundVariantSelector, SoundVariantSelector>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

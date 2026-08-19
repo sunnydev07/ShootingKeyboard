@@ -24,6 +24,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IStartupManager _startupManager;
     private readonly IRuntimeDiagnosticsService _diagnosticsService;
     private readonly IKeyPressFilter _keyPressFilter;
+    private readonly ISoundVariantSelector _variantSelector;
     private readonly IServiceProvider _serviceProvider;
 
     private SettingsWindow? _settingsWindow;
@@ -44,6 +45,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IStartupManager startupManager,
         IRuntimeDiagnosticsService diagnosticsService,
         IKeyPressFilter keyPressFilter,
+        ISoundVariantSelector variantSelector,
         IServiceProvider serviceProvider)
     {
         _configService = configService;
@@ -57,6 +59,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _startupManager = startupManager;
         _diagnosticsService = diagnosticsService;
         _keyPressFilter = keyPressFilter;
+        _variantSelector = variantSelector;
         _serviceProvider = serviceProvider;
     }
 
@@ -127,6 +130,19 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             {
                 _audioEngine.LoadSound(sound.Id, sound.File);
             }
+
+            if (sound.Variants != null)
+            {
+                for (int i = 0; i < sound.Variants.Count; i++)
+                {
+                    var variantFile = sound.Variants[i];
+                    if (File.Exists(variantFile))
+                    {
+                        var variantId = _variantSelector.GetVariantAudioId(sound.Id, i);
+                        _audioEngine.LoadSound(variantId, variantFile);
+                    }
+                }
+            }
         }
     }
 
@@ -196,23 +212,31 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
 
         var soundEntry = activePack.GetSound(finalSoundId);
-        float volume = soundEntry?.Volume ?? 1.0f;
-
-        if (!_audioEngine.IsSoundLoaded(finalSoundId))
+        if (soundEntry == null)
         {
-            if (soundEntry != null && File.Exists(soundEntry.File))
+            _diagnosticsService.RecordPlayback(finalSoundId, false, "sound-not-found");
+            return;
+        }
+
+        var clip = _variantSelector.SelectClip(soundEntry);
+        string audioId = clip.AudioId;
+        float volume = clip.Volume;
+
+        if (!_audioEngine.IsSoundLoaded(audioId))
+        {
+            if (File.Exists(clip.FilePath))
             {
-                _audioEngine.LoadSound(finalSoundId, soundEntry.File);
+                _audioEngine.LoadSound(audioId, clip.FilePath);
             }
             else
             {
-                _diagnosticsService.RecordPlayback(finalSoundId, false, "file-not-found");
+                _diagnosticsService.RecordPlayback(audioId, false, "file-not-found");
                 return;
             }
         }
 
-        _audioEngine.PlayWithPitch(finalSoundId, volume, pitch);
-        _diagnosticsService.RecordPlayback(finalSoundId, true, "ok");
+        _audioEngine.PlayWithPitch(audioId, volume, pitch);
+        _diagnosticsService.RecordPlayback(audioId, true, "ok");
 
         // Visual overlay feedback
         if (config.OverlayEnabled && !config.PerformanceMode)
