@@ -49,6 +49,7 @@ public partial class App : Application
         services.AddSingleton<ITrayIconManager, TrayIconManager>();
         services.AddSingleton<IStartupManager, StartupManager>();
         services.AddSingleton<IBindingResolver, BindingResolver>();
+        services.AddSingleton<ISoundPackValidator, SoundPackValidator>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
