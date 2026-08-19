@@ -99,6 +99,12 @@ public sealed class AppConfig
     public List<AppProfile> Profiles { get; set; } = new();
 
     /// <summary>
+    /// Per-application playback and override rules
+    /// </summary>
+    [JsonPropertyName("appRules")]
+    public List<AppRule> AppRules { get; set; } = new();
+
+    /// <summary>
     /// Creates a default configuration
     /// </summary>
     public static AppConfig CreateDefault() => new();
@@ -219,6 +225,11 @@ public sealed class AppConfig
         if (string.IsNullOrEmpty(ActiveProfileId) || !Profiles.Any(p => p.Id == ActiveProfileId))
         {
             ActiveProfileId = Profiles[0].Id;
+        }
+
+        if (AppRules == null)
+        {
+            AppRules = new List<AppRule>();
         }
     }
 }

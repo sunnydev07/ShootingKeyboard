@@ -54,6 +54,8 @@ public partial class App : Application
         services.AddSingleton<IKeyPressFilter, KeyPressFilter>();
         services.AddSingleton<ISoundVariantSelector, SoundVariantSelector>();
         services.AddSingleton<IProfileManager, ProfileManager>();
+        services.AddSingleton<IForegroundAppService, ForegroundAppService>();
+        services.AddSingleton<IAppRuleEvaluator, AppRuleEvaluator>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
