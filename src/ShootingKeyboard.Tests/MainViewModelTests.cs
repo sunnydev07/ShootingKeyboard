@@ -23,6 +23,8 @@ public class MainViewModelTests
     private readonly Mock<IRuntimeDiagnosticsService> _diagnosticsServiceMock = new();
     private readonly Mock<IKeyPressFilter> _keyPressFilterMock = new();
     private readonly Mock<ISoundVariantSelector> _variantSelectorMock = new();
+    private readonly Mock<IForegroundAppService> _foregroundAppServiceMock = new();
+    private readonly Mock<IAppRuleEvaluator> _appRuleEvaluatorMock = new();
     private readonly Mock<IServiceProvider> _serviceProviderMock = new();
 
     private readonly SoundPack _testPack;
@@ -49,6 +51,9 @@ public class MainViewModelTests
 
         _variantSelectorMock.Setup(v => v.SelectClip(It.IsAny<SoundEntry>()))
             .Returns((SoundEntry s) => new SelectedSoundClip { AudioId = s?.Id ?? "", FilePath = s?.File ?? "", Volume = s?.Volume ?? 1.0f });
+
+        _appRuleEvaluatorMock.Setup(e => e.Evaluate(It.IsAny<ForegroundAppInfo>(), It.IsAny<AppConfig>()))
+            .Returns(new AppRuleDecision { ShouldPlay = true, Reason = "no-rule" });
     }
 
     private MainViewModel CreateViewModel(AppConfig? config = null)
@@ -79,6 +84,8 @@ public class MainViewModelTests
             _diagnosticsServiceMock.Object,
             _keyPressFilterMock.Object,
             _variantSelectorMock.Object,
+            _foregroundAppServiceMock.Object,
+            _appRuleEvaluatorMock.Object,
             _serviceProviderMock.Object);
     }
 
@@ -178,6 +185,57 @@ public class MainViewModelTests
 
         // Effective volume = 1.0 (clip) * 0.8 (WASD group) * 0.5 (key 0x41) = 0.40f
         _audioEngineMock.Verify(a => a.PlayWithPitch("shot_default", It.Is<float>(v => Math.Abs(v - 0.4f) < 0.001f), 1.0f), Times.Once);
+    }
+
+    [Fact]
+    public void OnKeyPressed_WhenAppRuleDisablesPlayback_IgnoresAndRecordsDiagnostics()
+    {
+        var vm = CreateViewModel();
+        vm.Initialize();
+
+        _appRuleEvaluatorMock.Setup(e => e.Evaluate(It.IsAny<ForegroundAppInfo>(), It.IsAny<AppConfig>()))
+            .Returns(new AppRuleDecision { ShouldPlay = false, Reason = "disabled-by-app-rule" });
+
+        // Act
+        _keyboardHookMock.Raise(k => k.KeyPressed += null, new KeyPressedEventArgs(new KeyEvent(0x41, true)));
+
+        // Assert
+        _comboTrackerMock.Verify(c => c.RegisterKeyPress(), Times.Never);
+        _audioEngineMock.Verify(a => a.PlayWithPitch(It.IsAny<string>(), It.IsAny<float>(), It.IsAny<float>()), Times.Never);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback(string.Empty, false, "disabled-by-app-rule"), Times.Once);
+    }
+
+    [Fact]
+    public void OnKeyPressed_WhenAppRuleOverridesSoundPack_UsesOverriddenPack()
+    {
+        var vm = CreateViewModel();
+        vm.Initialize();
+
+        var overridePack = new SoundPack
+        {
+            Id = "override_pack",
+            Name = "Override Pack",
+            Sounds = new List<SoundEntry>
+            {
+                new SoundEntry { Id = "laser_shot", DisplayName = "Laser", Volume = 1.0f, File = "laser.wav" }
+            }
+        };
+        _soundPackManagerMock.Setup(m => m.GetPack("override_pack")).Returns(overridePack);
+
+        _appRuleEvaluatorMock.Setup(e => e.Evaluate(It.IsAny<ForegroundAppInfo>(), It.IsAny<AppConfig>()))
+            .Returns(new AppRuleDecision { ShouldPlay = true, SoundPackIdOverride = "override_pack", Reason = "matched-rule" });
+
+        _bindingResolverMock.Setup(r => r.ResolveSound(0x41, overridePack, It.IsAny<AppConfig>())).Returns("laser_shot");
+        _variantSelectorMock.Setup(v => v.SelectClip(It.Is<SoundEntry>(s => s.Id == "laser_shot")))
+            .Returns(new SelectedSoundClip { AudioId = "laser_shot", FilePath = "laser.wav", Volume = 1.0f });
+        _audioEngineMock.Setup(a => a.IsSoundLoaded("laser_shot")).Returns(true);
+
+        // Act
+        _keyboardHookMock.Raise(k => k.KeyPressed += null, new KeyPressedEventArgs(new KeyEvent(0x41, true)));
+
+        // Assert
+        _audioEngineMock.Verify(a => a.PlayWithPitch("laser_shot", 1.0f, 1.0f), Times.Once);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback("laser_shot", true, "ok"), Times.Once);
     }
 
     [Fact]

@@ -25,6 +25,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IRuntimeDiagnosticsService _diagnosticsService;
     private readonly IKeyPressFilter _keyPressFilter;
     private readonly ISoundVariantSelector _variantSelector;
+    private readonly IForegroundAppService _foregroundAppService;
+    private readonly IAppRuleEvaluator _appRuleEvaluator;
     private readonly IServiceProvider _serviceProvider;
 
     private SettingsWindow? _settingsWindow;
@@ -46,6 +48,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IRuntimeDiagnosticsService diagnosticsService,
         IKeyPressFilter keyPressFilter,
         ISoundVariantSelector variantSelector,
+        IForegroundAppService foregroundAppService,
+        IAppRuleEvaluator appRuleEvaluator,
         IServiceProvider serviceProvider)
     {
         _configService = configService;
@@ -60,6 +64,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _diagnosticsService = diagnosticsService;
         _keyPressFilter = keyPressFilter;
         _variantSelector = variantSelector;
+        _foregroundAppService = foregroundAppService;
+        _appRuleEvaluator = appRuleEvaluator;
         _serviceProvider = serviceProvider;
     }
 
@@ -171,7 +177,24 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
+        var foregroundApp = _foregroundAppService.GetForegroundApp();
+        var ruleDecision = _appRuleEvaluator.Evaluate(foregroundApp, config);
+        if (!ruleDecision.ShouldPlay)
+        {
+            _diagnosticsService.RecordPlayback(string.Empty, false, ruleDecision.Reason);
+            return;
+        }
+
         var activePack = _soundPackManager.ActivePack;
+        if (!string.IsNullOrEmpty(ruleDecision.SoundPackIdOverride))
+        {
+            var overriddenPack = _soundPackManager.GetPack(ruleDecision.SoundPackIdOverride);
+            if (overriddenPack != null)
+            {
+                activePack = overriddenPack;
+            }
+        }
+
         if (activePack == null)
         {
             _diagnosticsService.RecordPlayback(string.Empty, false, "no-active-pack");
