@@ -107,6 +107,11 @@ public class SettingsViewModelTests
         Assert.Equal(450, vm.ComboWindowMs);
         Assert.True(vm.IgnoreKeyRepeats);
         Assert.Equal(25, vm.GlobalCooldownMs);
+        Assert.True(vm.ShowRipple);
+        Assert.True(vm.ShowCombo);
+        Assert.Equal("#FFA500", vm.RippleColor);
+        Assert.Equal("TopCenter", vm.ComboPosition);
+        Assert.Equal(1.0, vm.OverlayScale);
         Assert.Equal(2, vm.AvailablePacks.Count);
         Assert.NotNull(vm.SelectedPack);
         Assert.Equal("warzone", vm.SelectedPack.Id);
@@ -184,6 +189,10 @@ public class SettingsViewModelTests
         vm.ComboWindowMs = 600;
         vm.IgnoreKeyRepeats = false;
         vm.GlobalCooldownMs = 50;
+        vm.ShowRipple = false;
+        vm.RippleColor = "#00FF00";
+        vm.ComboPosition = "TopRight";
+        vm.OverlayScale = 1.8;
         vm.SelectedPack = _testPacks[1]; // scifi
 
         _keyboardHookMock.SetupGet(k => k.IsRunning).Returns(true);
@@ -202,6 +211,10 @@ public class SettingsViewModelTests
             cfg.ComboWindowMs == 600 &&
             cfg.PlaybackFilter.IgnoreKeyRepeats == false &&
             cfg.PlaybackFilter.GlobalCooldownMs == 50 &&
+            cfg.Overlay.ShowRipple == false &&
+            cfg.Overlay.RippleColor == "#00FF00" &&
+            cfg.Overlay.ComboPosition == "TopRight" &&
+            cfg.Overlay.Scale == 1.8 &&
             cfg.ActivePackId == "scifi"
         )), Times.Once);
 
@@ -210,6 +223,7 @@ public class SettingsViewModelTests
         _audioEngineMock.Verify(a => a.SetMuted(true), Times.AtLeastOnce());
         _comboTrackerMock.VerifySet(ct => ct.ComboWindowMs = 600, Times.AtLeastOnce());
         _overlayManagerMock.VerifySet(o => o.IsEnabled = false, Times.AtLeastOnce());
+        _overlayManagerMock.Verify(o => o.ApplyConfig(It.Is<OverlayConfig>(oc => oc.ComboPosition == "TopRight")), Times.Once);
         _startupManagerMock.Verify(s => s.SetStartupEnabled(true), Times.Once);
         _soundPackManagerMock.Verify(s => s.SetActivePack("scifi"), Times.Once);
         _keyboardHookMock.Verify(k => k.Stop(), Times.Once);

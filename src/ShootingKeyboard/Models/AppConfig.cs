@@ -105,6 +105,12 @@ public sealed class AppConfig
     public List<AppRule> AppRules { get; set; } = new();
 
     /// <summary>
+    /// Visual overlay customization settings
+    /// </summary>
+    [JsonPropertyName("overlay")]
+    public OverlayConfig Overlay { get; set; } = new();
+
+    /// <summary>
     /// Creates a default configuration
     /// </summary>
     public static AppConfig CreateDefault() => new();
@@ -230,6 +236,24 @@ public sealed class AppConfig
         if (AppRules == null)
         {
             AppRules = new List<AppRule>();
+        }
+
+        if (Overlay == null)
+        {
+            Overlay = new OverlayConfig();
+        }
+
+        var validPositions = new[] { "TopCenter", "TopLeft", "TopRight", "BottomCenter" };
+        if (string.IsNullOrEmpty(Overlay.ComboPosition) || !validPositions.Contains(Overlay.ComboPosition, StringComparer.OrdinalIgnoreCase))
+        {
+            Overlay.ComboPosition = "TopCenter";
+        }
+
+        Overlay.Scale = Math.Clamp(Overlay.Scale, 0.5, 2.0);
+
+        if (string.IsNullOrWhiteSpace(Overlay.RippleColor) || !Overlay.RippleColor.StartsWith("#"))
+        {
+            Overlay.RippleColor = "#FFA500";
         }
     }
 }

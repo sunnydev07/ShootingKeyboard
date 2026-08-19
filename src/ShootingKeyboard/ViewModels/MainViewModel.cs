@@ -83,6 +83,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         // Configure overlay
         _overlayManager.IsEnabled = config.OverlayEnabled && !config.PerformanceMode;
+        _overlayManager.ApplyConfig(config.Overlay ?? new OverlayConfig());
 
         // Discover and load sound packs
         _soundPackManager.Refresh();

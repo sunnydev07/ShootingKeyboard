@@ -11,6 +11,7 @@ namespace ShootingKeyboard.Overlay;
 public partial class OverlayWindow : Window
 {
     private bool _isComboDisplayActive = false;
+    private Models.OverlayConfig _config = new();
 
     public bool IsComboDisplayActive => _isComboDisplayActive;
 
@@ -33,8 +34,54 @@ public partial class OverlayWindow : Window
         NativeMethods.SetWindowLong(hwnd, NativeMethods.GWL_EXSTYLE, extendedStyle | NativeMethods.WS_EX_TRANSPARENT | NativeMethods.WS_EX_LAYERED);
     }
 
+    public void ApplyConfig(Models.OverlayConfig config)
+    {
+        _config = config ?? new Models.OverlayConfig();
+
+        try
+        {
+            if (ColorConverter.ConvertFromString(_config.RippleColor) is Color col)
+            {
+                RippleEllipse.Stroke = new SolidColorBrush(col);
+            }
+        }
+        catch
+        {
+            RippleEllipse.Stroke = Brushes.Orange;
+        }
+
+        RootGrid.LayoutTransform = new ScaleTransform(_config.Scale, _config.Scale);
+
+        switch (_config.ComboPosition)
+        {
+            case "TopLeft":
+                ComboBorder.HorizontalAlignment = HorizontalAlignment.Left;
+                ComboBorder.VerticalAlignment = VerticalAlignment.Top;
+                ComboBorder.Margin = new Thickness(50, 50, 0, 0);
+                break;
+            case "TopRight":
+                ComboBorder.HorizontalAlignment = HorizontalAlignment.Right;
+                ComboBorder.VerticalAlignment = VerticalAlignment.Top;
+                ComboBorder.Margin = new Thickness(0, 50, 50, 0);
+                break;
+            case "BottomCenter":
+                ComboBorder.HorizontalAlignment = HorizontalAlignment.Center;
+                ComboBorder.VerticalAlignment = VerticalAlignment.Bottom;
+                ComboBorder.Margin = new Thickness(0, 0, 0, 50);
+                break;
+            case "TopCenter":
+            default:
+                ComboBorder.HorizontalAlignment = HorizontalAlignment.Center;
+                ComboBorder.VerticalAlignment = VerticalAlignment.Top;
+                ComboBorder.Margin = new Thickness(0, 50, 0, 0);
+                break;
+        }
+    }
+
     public void ShowEffect(Point screenPosition)
     {
+        if (!_config.ShowRipple) return;
+
         // Position the ripple at the screen coordinates
         RippleTranslate.X = screenPosition.X - 30; // Center on cursor (half width)
         RippleTranslate.Y = screenPosition.Y - 30; // Center on cursor (half height)
@@ -72,7 +119,7 @@ public partial class OverlayWindow : Window
 
     public void UpdateCombo(int comboCount, int tier)
     {
-        if (comboCount <= 0)
+        if (!_config.ShowCombo || comboCount <= 0)
         {
             ComboBorder.Visibility = Visibility.Collapsed;
             _isComboDisplayActive = false;

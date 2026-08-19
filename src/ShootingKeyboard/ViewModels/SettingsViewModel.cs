@@ -60,6 +60,23 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _newProfileName = string.Empty;
 
+    [ObservableProperty]
+    private bool _showRipple = true;
+
+    [ObservableProperty]
+    private bool _showCombo = true;
+
+    [ObservableProperty]
+    private string _rippleColor = "#FFA500";
+
+    [ObservableProperty]
+    private string _comboPosition = "TopCenter";
+
+    [ObservableProperty]
+    private double _overlayScale = 1.0;
+
+    public string[] AvailableComboPositions { get; } = new[] { "TopCenter", "TopLeft", "TopRight", "BottomCenter" };
+
     public ObservableCollection<AppProfile> Profiles { get; } = new();
     public ObservableCollection<SoundPack> AvailablePacks { get; } = new();
 
@@ -111,6 +128,13 @@ public sealed partial class SettingsViewModel : ObservableObject
             var filter = config.PlaybackFilter ?? new PlaybackFilterConfig();
             IgnoreKeyRepeats = filter.IgnoreKeyRepeats;
             GlobalCooldownMs = filter.GlobalCooldownMs;
+
+            var overlay = config.Overlay ?? new OverlayConfig();
+            ShowRipple = overlay.ShowRipple;
+            ShowCombo = overlay.ShowCombo;
+            RippleColor = overlay.RippleColor;
+            ComboPosition = overlay.ComboPosition;
+            OverlayScale = overlay.Scale;
 
             Profiles.Clear();
             foreach (var profile in _profileManager.GetProfiles(config))
@@ -182,6 +206,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _audioEngine.SetMuted(config.IsMuted);
         _comboTracker.ComboWindowMs = config.ComboWindowMs;
         _overlayManager.IsEnabled = config.OverlayEnabled && !config.PerformanceMode;
+        _overlayManager.ApplyConfig(config.Overlay ?? new OverlayConfig());
         _startupManager.SetStartupEnabled(config.StartWithWindows);
     }
 
@@ -313,6 +338,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         config.PlaybackFilter.IgnoreKeyRepeats = IgnoreKeyRepeats;
         config.PlaybackFilter.GlobalCooldownMs = GlobalCooldownMs;
 
+        config.Overlay ??= new OverlayConfig();
+        config.Overlay.ShowRipple = ShowRipple;
+        config.Overlay.ShowCombo = ShowCombo;
+        config.Overlay.RippleColor = RippleColor;
+        config.Overlay.ComboPosition = ComboPosition;
+        config.Overlay.Scale = OverlayScale;
+
         if (SelectedPack != null)
         {
             config.ActivePackId = SelectedPack.Id;
@@ -326,6 +358,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _audioEngine.SetMuted(config.IsMuted);
         _comboTracker.ComboWindowMs = config.ComboWindowMs;
         _overlayManager.IsEnabled = config.OverlayEnabled && !config.PerformanceMode;
+        _overlayManager.ApplyConfig(config.Overlay);
         _startupManager.SetStartupEnabled(config.StartWithWindows);
 
         try

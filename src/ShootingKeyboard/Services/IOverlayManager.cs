@@ -36,4 +36,9 @@ public interface IOverlayManager
     /// Whether the overlay is enabled
     /// </summary>
     bool IsEnabled { get; set; }
+
+    /// <summary>
+    /// Applies overlay customization configuration
+    /// </summary>
+    void ApplyConfig(Models.OverlayConfig config);
 }

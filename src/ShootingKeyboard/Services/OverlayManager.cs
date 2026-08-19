@@ -69,4 +69,13 @@ public sealed class OverlayManager : IOverlayManager
             Application.Current?.Dispatcher.Invoke(() => _overlayWindow.Hide());
         }
     }
+
+    public void ApplyConfig(Models.OverlayConfig config)
+    {
+        EnsureWindow();
+        if (_overlayWindow != null)
+        {
+            Application.Current?.Dispatcher.Invoke(() => _overlayWindow.ApplyConfig(config));
+        }
+    }
 }
