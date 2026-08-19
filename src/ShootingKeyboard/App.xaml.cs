@@ -63,6 +63,7 @@ public partial class App : Application
         services.AddTransient<KeyBindingViewModel>();
         services.AddTransient<SoundPackViewModel>();
         services.AddTransient<DiagnosticsViewModel>();
+        services.AddTransient<AppRulesViewModel>();
     }
 
     private void Application_Startup(object sender, StartupEventArgs e)

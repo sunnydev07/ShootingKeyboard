@@ -351,4 +351,16 @@ public class SettingsViewModelTests
 
         Assert.True(eventFired);
     }
+
+    [Fact]
+    public void OpenAppRulesCommand_FiresRequestOpenAppRulesEvent()
+    {
+        var vm = CreateViewModel();
+        var eventFired = false;
+        vm.RequestOpenAppRules += () => eventFired = true;
+
+        vm.OpenAppRulesCommand.Execute(null);
+
+        Assert.True(eventFired);
+    }
 }

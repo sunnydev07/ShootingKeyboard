@@ -65,6 +65,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public event Action? RequestClose;
     public event Action? RequestOpenKeyBindings;
     public event Action? RequestOpenSoundPacks;
+    public event Action? RequestOpenAppRules;
 
     public SettingsViewModel(
         IConfigService configService,
@@ -325,4 +326,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [RelayCommand]
     public void OpenSoundPacks() => RequestOpenSoundPacks?.Invoke();
+
+    [RelayCommand]
+    public void OpenAppRules() => RequestOpenAppRules?.Invoke();
 }

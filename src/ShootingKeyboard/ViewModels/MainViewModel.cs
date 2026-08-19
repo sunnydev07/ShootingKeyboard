@@ -33,6 +33,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private KeyBindingWindow? _keyBindingWindow;
     private SoundPackWindow? _soundPackWindow;
     private DiagnosticsWindow? _diagnosticsWindow;
+    private AppRulesWindow? _appRulesWindow;
     private bool _disposed;
 
     public MainViewModel(
@@ -354,6 +355,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 var vm = _serviceProvider.GetRequiredService<SettingsViewModel>();
                 vm.RequestOpenKeyBindings += ShowKeyBindingWindow;
                 vm.RequestOpenSoundPacks += ShowSoundPackWindow;
+                vm.RequestOpenAppRules += ShowAppRulesWindow;
                 _settingsWindow = new SettingsWindow(vm);
             }
 
@@ -393,6 +395,21 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
             _soundPackWindow.Show();
             _soundPackWindow.Activate();
+        });
+    }
+
+    public void ShowAppRulesWindow()
+    {
+        Application.Current?.Dispatcher.Invoke(() =>
+        {
+            if (_appRulesWindow == null || !_appRulesWindow.IsLoaded)
+            {
+                var vm = _serviceProvider.GetRequiredService<AppRulesViewModel>();
+                _appRulesWindow = new AppRulesWindow(vm);
+            }
+
+            _appRulesWindow.Show();
+            _appRulesWindow.Activate();
         });
     }
 
