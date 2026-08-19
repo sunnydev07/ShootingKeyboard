@@ -20,6 +20,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly IComboTracker _comboTracker;
     private readonly ITrayIconManager _trayIconManager;
 
+    private bool _isLoading;
+
     [ObservableProperty]
     private float _masterVolume;
 
@@ -43,6 +45,12 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private int _comboWindowMs;
+
+    [ObservableProperty]
+    private bool _ignoreKeyRepeats;
+
+    [ObservableProperty]
+    private int _globalCooldownMs;
 
     public ObservableCollection<SoundPack> AvailablePacks { get; } = new();
 
@@ -74,23 +82,85 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public void LoadFromConfig()
     {
-        var config = _configService.Load();
-        MasterVolume = config.MasterVolume;
-        IsMuted = config.IsMuted;
-        IsEnabled = config.IsEnabled;
-        OverlayEnabled = config.OverlayEnabled;
-        PerformanceMode = config.PerformanceMode;
-        StartWithWindows = config.StartWithWindows;
-        ComboWindowMs = config.ComboWindowMs;
-
-        AvailablePacks.Clear();
-        foreach (var pack in _soundPackManager.GetPacks())
+        _isLoading = true;
+        try
         {
-            AvailablePacks.Add(pack);
-        }
+            var config = _configService.Load();
+            MasterVolume = config.MasterVolume;
+            IsMuted = config.IsMuted;
+            IsEnabled = config.IsEnabled;
+            OverlayEnabled = config.OverlayEnabled;
+            PerformanceMode = config.PerformanceMode;
+            StartWithWindows = config.StartWithWindows;
+            ComboWindowMs = config.ComboWindowMs;
 
-        SelectedPack = AvailablePacks.FirstOrDefault(p => p.Id.Equals(config.ActivePackId, StringComparison.OrdinalIgnoreCase))
-                       ?? AvailablePacks.FirstOrDefault();
+            var filter = config.PlaybackFilter ?? new PlaybackFilterConfig();
+            IgnoreKeyRepeats = filter.IgnoreKeyRepeats;
+            GlobalCooldownMs = filter.GlobalCooldownMs;
+
+            AvailablePacks.Clear();
+            foreach (var pack in _soundPackManager.GetPacks())
+            {
+                AvailablePacks.Add(pack);
+            }
+
+            SelectedPack = AvailablePacks.FirstOrDefault(p => p.Id.Equals(config.ActivePackId, StringComparison.OrdinalIgnoreCase))
+                           ?? AvailablePacks.FirstOrDefault();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    partial void OnMasterVolumeChanged(float value)
+    {
+        if (!_isLoading)
+        {
+            _audioEngine.SetMasterVolume(value);
+        }
+    }
+
+    partial void OnIsMutedChanged(bool value)
+    {
+        if (!_isLoading)
+        {
+            _audioEngine.SetMuted(value);
+        }
+    }
+
+    partial void OnComboWindowMsChanged(int value)
+    {
+        if (!_isLoading)
+        {
+            _comboTracker.ComboWindowMs = value;
+        }
+    }
+
+    partial void OnOverlayEnabledChanged(bool value)
+    {
+        if (!_isLoading)
+        {
+            _overlayManager.IsEnabled = value && !PerformanceMode;
+        }
+    }
+
+    partial void OnPerformanceModeChanged(bool value)
+    {
+        if (!_isLoading)
+        {
+            _overlayManager.IsEnabled = OverlayEnabled && !value;
+        }
+    }
+
+    public void RevertRuntimeChanges()
+    {
+        var config = _configService.Load();
+        _audioEngine.SetMasterVolume(config.MasterVolume);
+        _audioEngine.SetMuted(config.IsMuted);
+        _comboTracker.ComboWindowMs = config.ComboWindowMs;
+        _overlayManager.IsEnabled = config.OverlayEnabled && !config.PerformanceMode;
+        _startupManager.SetStartupEnabled(config.StartWithWindows);
     }
 
     [RelayCommand]
@@ -104,6 +174,9 @@ public sealed partial class SettingsViewModel : ObservableObject
         config.PerformanceMode = PerformanceMode;
         config.StartWithWindows = StartWithWindows;
         config.ComboWindowMs = ComboWindowMs;
+
+        config.PlaybackFilter.IgnoreKeyRepeats = IgnoreKeyRepeats;
+        config.PlaybackFilter.GlobalCooldownMs = GlobalCooldownMs;
 
         if (SelectedPack != null)
         {

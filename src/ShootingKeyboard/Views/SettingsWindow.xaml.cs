@@ -18,6 +18,7 @@ public partial class SettingsWindow : Window
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
+        _viewModel.RevertRuntimeChanges();
         Close();
     }
 }

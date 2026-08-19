@@ -59,7 +59,12 @@ public class SettingsViewModelTests
             OverlayEnabled = true,
             PerformanceMode = false,
             StartWithWindows = false,
-            ComboWindowMs = 450
+            ComboWindowMs = 450,
+            PlaybackFilter = new PlaybackFilterConfig
+            {
+                IgnoreKeyRepeats = true,
+                GlobalCooldownMs = 25
+            }
         };
 
         _configServiceMock.Setup(c => c.Load()).Returns(cfg);
@@ -87,6 +92,8 @@ public class SettingsViewModelTests
         Assert.False(vm.PerformanceMode);
         Assert.False(vm.StartWithWindows);
         Assert.Equal(450, vm.ComboWindowMs);
+        Assert.True(vm.IgnoreKeyRepeats);
+        Assert.Equal(25, vm.GlobalCooldownMs);
         Assert.Equal(2, vm.AvailablePacks.Count);
         Assert.NotNull(vm.SelectedPack);
         Assert.Equal("warzone", vm.SelectedPack.Id);
@@ -107,6 +114,8 @@ public class SettingsViewModelTests
         vm.PerformanceMode = true;
         vm.StartWithWindows = true;
         vm.ComboWindowMs = 600;
+        vm.IgnoreKeyRepeats = false;
+        vm.GlobalCooldownMs = 50;
         vm.SelectedPack = _testPacks[1]; // scifi
 
         _keyboardHookMock.SetupGet(k => k.IsRunning).Returns(true);
@@ -123,20 +132,78 @@ public class SettingsViewModelTests
             cfg.PerformanceMode == true &&
             cfg.StartWithWindows == true &&
             cfg.ComboWindowMs == 600 &&
+            cfg.PlaybackFilter.IgnoreKeyRepeats == false &&
+            cfg.PlaybackFilter.GlobalCooldownMs == 50 &&
             cfg.ActivePackId == "scifi"
         )), Times.Once);
 
         // Verify runtime updates
-        _audioEngineMock.Verify(a => a.SetMasterVolume(0.5f), Times.Once);
-        _audioEngineMock.Verify(a => a.SetMuted(true), Times.Once);
-        _comboTrackerMock.VerifySet(ct => ct.ComboWindowMs = 600, Times.Once);
-        _overlayManagerMock.VerifySet(o => o.IsEnabled = false, Times.Once);
+        _audioEngineMock.Verify(a => a.SetMasterVolume(0.5f), Times.AtLeastOnce());
+        _audioEngineMock.Verify(a => a.SetMuted(true), Times.AtLeastOnce());
+        _comboTrackerMock.VerifySet(ct => ct.ComboWindowMs = 600, Times.AtLeastOnce());
+        _overlayManagerMock.VerifySet(o => o.IsEnabled = false, Times.AtLeastOnce());
         _startupManagerMock.Verify(s => s.SetStartupEnabled(true), Times.Once);
         _soundPackManagerMock.Verify(s => s.SetActivePack("scifi"), Times.Once);
         _keyboardHookMock.Verify(k => k.Stop(), Times.Once);
         _trayIconManagerMock.Verify(t => t.ShowNotification("Shooting Keyboard", "Settings saved successfully", BalloonIcon.Info), Times.Once);
 
         Assert.True(closeFired);
+    }
+
+    [Fact]
+    public void LiveApply_UpdatesRuntimeServicesOnPropertyChange()
+    {
+        var vm = CreateViewModel();
+
+        _audioEngineMock.Invocations.Clear();
+        _comboTrackerMock.Invocations.Clear();
+        _overlayManagerMock.Invocations.Clear();
+
+        vm.MasterVolume = 0.35f;
+        _audioEngineMock.Verify(a => a.SetMasterVolume(0.35f), Times.Once);
+
+        vm.IsMuted = true;
+        _audioEngineMock.Verify(a => a.SetMuted(true), Times.Once);
+
+        vm.ComboWindowMs = 700;
+        _comboTrackerMock.VerifySet(ct => ct.ComboWindowMs = 700, Times.Once);
+
+        vm.OverlayEnabled = false;
+        _overlayManagerMock.VerifySet(o => o.IsEnabled = false, Times.Once);
+
+        vm.OverlayEnabled = true;
+        vm.PerformanceMode = true;
+        _overlayManagerMock.VerifySet(o => o.IsEnabled = false, Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public void RevertRuntimeChanges_RestoresServicesFromSavedConfig()
+    {
+        var originalConfig = new AppConfig
+        {
+            MasterVolume = 0.8f,
+            IsMuted = false,
+            ComboWindowMs = 400,
+            OverlayEnabled = true,
+            PerformanceMode = false,
+            StartWithWindows = false
+        };
+        var vm = CreateViewModel(originalConfig);
+
+        // Change runtime values
+        vm.MasterVolume = 0.2f;
+        vm.IsMuted = true;
+        vm.ComboWindowMs = 900;
+        vm.OverlayEnabled = false;
+
+        // Act
+        vm.RevertRuntimeChanges();
+
+        // Assert - restored to original config values
+        _audioEngineMock.Verify(a => a.SetMasterVolume(0.8f), Times.AtLeastOnce());
+        _audioEngineMock.Verify(a => a.SetMuted(false), Times.AtLeastOnce());
+        _comboTrackerMock.VerifySet(ct => ct.ComboWindowMs = 400, Times.AtLeastOnce());
+        _overlayManagerMock.VerifySet(o => o.IsEnabled = true, Times.AtLeastOnce());
     }
 
     [Fact]
