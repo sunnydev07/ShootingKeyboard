@@ -212,4 +212,80 @@ public sealed class SoundPackValidator : ISoundPackValidator
 
         return result;
     }
+
+    public SoundPackValidationResult ValidatePackFolder(string packDirectory)
+    {
+        var result = new SoundPackValidationResult();
+        if (string.IsNullOrWhiteSpace(packDirectory) || !Directory.Exists(packDirectory))
+        {
+            result.Issues.Add(new SoundPackValidationIssue
+            {
+                Severity = SoundPackValidationSeverity.Error,
+                Code = "directory.missing",
+                Message = $"Pack directory does not exist: {packDirectory}"
+            });
+            return result;
+        }
+
+        var jsonPath = Path.Combine(packDirectory, "pack.json");
+        if (!File.Exists(jsonPath))
+        {
+            result.Issues.Add(new SoundPackValidationIssue
+            {
+                Severity = SoundPackValidationSeverity.Error,
+                Code = "pack.json.missing",
+                Message = "pack.json not found in pack directory."
+            });
+            return result;
+        }
+
+        SoundPack? pack;
+        try
+        {
+            var json = File.ReadAllText(jsonPath);
+            pack = System.Text.Json.JsonSerializer.Deserialize<SoundPack>(json, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            });
+        }
+        catch (Exception ex)
+        {
+            result.Issues.Add(new SoundPackValidationIssue
+            {
+                Severity = SoundPackValidationSeverity.Error,
+                Code = "pack.json.invalid",
+                Message = $"Failed to parse pack.json: {ex.Message}"
+            });
+            return result;
+        }
+
+        if (pack == null)
+        {
+            result.Issues.Add(new SoundPackValidationIssue
+            {
+                Severity = SoundPackValidationSeverity.Error,
+                Code = "pack.null",
+                Message = "Deserialized sound pack is null."
+            });
+            return result;
+        }
+
+        // Resolve paths
+        foreach (var sound in pack.Sounds)
+        {
+            if (!string.IsNullOrWhiteSpace(sound.File) && !Path.IsPathRooted(sound.File))
+            {
+                sound.File = Path.Combine(packDirectory, sound.File);
+            }
+            for (int i = 0; i < sound.Variants.Count; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(sound.Variants[i]) && !Path.IsPathRooted(sound.Variants[i]))
+                {
+                    sound.Variants[i] = Path.Combine(packDirectory, sound.Variants[i]);
+                }
+            }
+        }
+
+        return Validate(pack);
+    }
 }
