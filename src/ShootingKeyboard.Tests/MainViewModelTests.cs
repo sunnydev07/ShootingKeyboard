@@ -20,6 +20,7 @@ public class MainViewModelTests
     private readonly Mock<IOverlayManager> _overlayManagerMock = new();
     private readonly Mock<ITrayIconManager> _trayIconManagerMock = new();
     private readonly Mock<IStartupManager> _startupManagerMock = new();
+    private readonly Mock<IRuntimeDiagnosticsService> _diagnosticsServiceMock = new();
     private readonly Mock<IServiceProvider> _serviceProviderMock = new();
 
     private readonly SoundPack _testPack;
@@ -67,6 +68,7 @@ public class MainViewModelTests
             _overlayManagerMock.Object,
             _trayIconManagerMock.Object,
             _startupManagerMock.Object,
+            _diagnosticsServiceMock.Object,
             _serviceProviderMock.Object);
     }
 
@@ -108,6 +110,7 @@ public class MainViewModelTests
         _bindingResolverMock.Setup(r => r.ResolveSound(0x41, _testPack, It.IsAny<AppConfig>())).Returns("shot_default");
         _comboTrackerMock.SetupGet(c => c.CurrentTier).Returns(0);
         _comboTrackerMock.SetupGet(c => c.ComboCount).Returns(1);
+        _audioEngineMock.Setup(a => a.IsSoundLoaded("shot_default")).Returns(true);
 
         // Act - simulate pressing 'A' (0x41)
         _keyboardHookMock.Raise(k => k.KeyPressed += null, new KeyPressedEventArgs(new KeyEvent(0x41, true)));
@@ -115,10 +118,13 @@ public class MainViewModelTests
         // Assert
         _comboTrackerMock.Verify(c => c.RegisterKeyPress(), Times.Once);
         _audioEngineMock.Verify(a => a.PlayWithPitch("shot_default", 0.9f, 1.0f), Times.Once);
+        _diagnosticsServiceMock.Verify(d => d.RecordKeyEvent(It.Is<KeyEvent>(k => k.KeyCode == 0x41 && k.IsPressed)), Times.Once);
+        _diagnosticsServiceMock.Verify(d => d.RecordResolvedSound(0x41, "shot_default"), Times.Once);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback("shot_default", true, "ok"), Times.Once);
     }
 
     [Fact]
-    public void OnKeyPressed_WhenKeyUp_Ignored()
+    public void OnKeyPressed_WhenKeyUp_IgnoredAndRecordedInDiagnostics()
     {
         var vm = CreateViewModel();
         vm.Initialize();
@@ -129,10 +135,12 @@ public class MainViewModelTests
         // Assert
         _comboTrackerMock.Verify(c => c.RegisterKeyPress(), Times.Never);
         _audioEngineMock.Verify(a => a.PlayWithPitch(It.IsAny<string>(), It.IsAny<float>(), It.IsAny<float>()), Times.Never);
+        _diagnosticsServiceMock.Verify(d => d.RecordKeyEvent(It.Is<KeyEvent>(k => k.KeyCode == 0x41 && !k.IsPressed)), Times.Once);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback(string.Empty, false, "key-up"), Times.Once);
     }
 
     [Fact]
-    public void OnKeyPressed_WhenMutedOrDisabled_Ignored()
+    public void OnKeyPressed_WhenMutedOrDisabled_IgnoredAndRecordedInDiagnostics()
     {
         var config = new AppConfig { IsMuted = true, IsEnabled = true };
         var vm = CreateViewModel(config);
@@ -143,6 +151,7 @@ public class MainViewModelTests
 
         // Assert
         _audioEngineMock.Verify(a => a.PlayWithPitch(It.IsAny<string>(), It.IsAny<float>(), It.IsAny<float>()), Times.Never);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback(string.Empty, false, "muted"), Times.Once);
     }
 
     [Fact]
@@ -154,12 +163,14 @@ public class MainViewModelTests
         _bindingResolverMock.Setup(r => r.ResolveSound(0x41, _testPack, It.IsAny<AppConfig>())).Returns("shot_default");
         _comboTrackerMock.SetupGet(c => c.CurrentTier).Returns(2);
         _comboTrackerMock.SetupGet(c => c.ComboCount).Returns(20);
+        _audioEngineMock.Setup(a => a.IsSoundLoaded("shot_tier2")).Returns(true);
 
         // Act - simulate pressing 'A'
         _keyboardHookMock.Raise(k => k.KeyPressed += null, new KeyPressedEventArgs(new KeyEvent(0x41, true)));
 
         // Assert: Tier 2 has combo variant "shot_tier2" with pitch 1.10f (1.0 + 2*0.05)
         _audioEngineMock.Verify(a => a.PlayWithPitch("shot_tier2", 1.0f, 1.10f), Times.Once);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback("shot_tier2", true, "ok"), Times.Once);
     }
 
     [Fact]
@@ -171,12 +182,14 @@ public class MainViewModelTests
 
         _bindingResolverMock.Setup(r => r.ResolveSound(0x41, _testPack, It.IsAny<AppConfig>())).Returns("shot_default");
         _comboTrackerMock.SetupGet(c => c.CurrentTier).Returns(2);
+        _audioEngineMock.Setup(a => a.IsSoundLoaded("shot_default")).Returns(true);
 
         // Act
         _keyboardHookMock.Raise(k => k.KeyPressed += null, new KeyPressedEventArgs(new KeyEvent(0x41, true)));
 
         // Assert: pitch should stay 1.0f in performance mode, base sound used
         _audioEngineMock.Verify(a => a.PlayWithPitch("shot_default", 0.9f, 1.0f), Times.Once);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback("shot_default", true, "ok"), Times.Once);
     }
 
     [Fact]

@@ -13,6 +13,8 @@ public sealed class ConfigService : IConfigService
     private readonly JsonSerializerOptions _jsonOptions;
     private AppConfig? _cachedConfig;
 
+    public string ConfigPath => _configPath;
+
     public ConfigService(string? customPath = null)
     {
         if (!string.IsNullOrEmpty(customPath))
@@ -101,6 +103,7 @@ public sealed class ConfigService : IConfigService
 /// </summary>
 public interface IConfigService
 {
+    string ConfigPath { get; }
     AppConfig Load();
     void Save(AppConfig config);
     void ResetToDefaults();

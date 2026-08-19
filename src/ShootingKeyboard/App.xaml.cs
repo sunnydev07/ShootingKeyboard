@@ -50,12 +50,14 @@ public partial class App : Application
         services.AddSingleton<IStartupManager, StartupManager>();
         services.AddSingleton<IBindingResolver, BindingResolver>();
         services.AddSingleton<ISoundPackValidator, SoundPackValidator>();
+        services.AddSingleton<IRuntimeDiagnosticsService, RuntimeDiagnosticsService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<KeyBindingViewModel>();
         services.AddTransient<SoundPackViewModel>();
+        services.AddTransient<DiagnosticsViewModel>();
     }
 
     private void Application_Startup(object sender, StartupEventArgs e)

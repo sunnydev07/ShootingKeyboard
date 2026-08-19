@@ -11,6 +11,11 @@ public interface ITrayIconManager : IDisposable
     event EventHandler? ShowSettingsRequested;
 
     /// <summary>
+    /// Shows the diagnostics window
+    /// </summary>
+    event EventHandler? DiagnosticsRequested;
+
+    /// <summary>
     /// Toggles mute state
     /// </summary>
     event EventHandler? ToggleMuteRequested;

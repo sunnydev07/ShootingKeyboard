@@ -1,0 +1,157 @@
+<Window x:Class="ShootingKeyboard.Views.DiagnosticsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:ShootingKeyboard.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewModels:DiagnosticsViewModel}"
+        Title="Shooting Keyboard — Diagnostics"
+        Height="560"
+        Width="640"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E222B"
+        Foreground="#ECEFF4"
+        FontFamily="Segoe UI"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#2D3340"/>
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+            <Setter Property="BorderBrush" Value="#4C566A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3B4252"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Runtime Diagnostics" FontSize="20" FontWeight="Bold" Foreground="#88C0D0"/>
+            <TextBlock Text="Inspect internal engine, hook, pack, and playback state in real-time" FontSize="12" Foreground="#81A1C1" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Content -->
+        <Border Grid.Row="1" Background="#252A34" CornerRadius="6" Padding="16" Margin="0,0,0,16">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Snapshot Time -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Snapshot Created:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Snapshot.CreatedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss.fff}'}" Foreground="#EBCB8B" Margin="0,4"/>
+
+                    <!-- Keyboard Hook -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Keyboard Hook:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Snapshot.KeyboardHookRunning, StringFormat='Running: {0}'}" Foreground="#A3BE8C" Margin="0,4"/>
+
+                    <!-- App Enabled -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Interception Enabled:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Snapshot.AppEnabled}" Margin="0,4"/>
+
+                    <!-- Muted -->
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Audio Muted:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Snapshot.Muted}" Margin="0,4"/>
+
+                    <!-- Active Pack -->
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Active Sound Pack:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Snapshot.ActivePackName, StringFormat='{}{0}'}" Foreground="#88C0D0" Margin="0,4"/>
+
+                    <!-- Active Pack ID -->
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Active Pack ID:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Snapshot.ActivePackId}" Margin="0,4"/>
+
+                    <!-- Available Packs -->
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Available Sound Packs:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Snapshot.AvailablePackCount}" Margin="0,4"/>
+
+                    <!-- Loaded Sounds -->
+                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Loaded Sounds in Memory:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Snapshot.LoadedSoundCount}" Margin="0,4"/>
+
+                    <!-- Config Path -->
+                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Config Path:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Snapshot.ConfigPath}" TextWrapping="Wrap" Margin="0,4"/>
+
+                    <!-- Last Key -->
+                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Last Intercepted Key:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding Snapshot.LastKey}" Foreground="#88C0D0" Margin="0,4"/>
+
+                    <!-- Last Resolved Sound -->
+                    <TextBlock Grid.Row="10" Grid.Column="0" Text="Last Resolved Sound:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding Snapshot.LastResolvedSoundId}" Margin="0,4"/>
+
+                    <!-- Last Played Sound -->
+                    <TextBlock Grid.Row="11" Grid.Column="0" Text="Last Played Sound:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding Snapshot.LastPlayedSoundId}" Margin="0,4"/>
+
+                    <!-- Last Playback Result -->
+                    <TextBlock Grid.Row="12" Grid.Column="0" Text="Last Playback Result:" FontWeight="SemiBold" Foreground="#D8DEE9" Margin="0,4"/>
+                    <TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding Snapshot.LastPlaybackResult}" Foreground="#EBCB8B" Margin="0,4"/>
+                </Grid>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Footer Buttons -->
+        <Grid Grid.Row="2">
+            <Button Content="🔄 Refresh Diagnostics"
+                    Command="{Binding RefreshCommand}"
+                    HorizontalAlignment="Left"
+                    Background="#4C566A"/>
+
+            <Button Content="Close"
+                    Click="CloseButton_Click"
+                    HorizontalAlignment="Right"/>
+        </Grid>
+    </Grid>
+</Window>

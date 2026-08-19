@@ -22,11 +22,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IOverlayManager _overlayManager;
     private readonly ITrayIconManager _trayIconManager;
     private readonly IStartupManager _startupManager;
+    private readonly IRuntimeDiagnosticsService _diagnosticsService;
     private readonly IServiceProvider _serviceProvider;
 
     private SettingsWindow? _settingsWindow;
     private KeyBindingWindow? _keyBindingWindow;
     private SoundPackWindow? _soundPackWindow;
+    private DiagnosticsWindow? _diagnosticsWindow;
     private bool _disposed;
 
     public MainViewModel(
@@ -39,6 +41,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IOverlayManager overlayManager,
         ITrayIconManager trayIconManager,
         IStartupManager startupManager,
+        IRuntimeDiagnosticsService diagnosticsService,
         IServiceProvider serviceProvider)
     {
         _configService = configService;
@@ -50,6 +53,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _overlayManager = overlayManager;
         _trayIconManager = trayIconManager;
         _startupManager = startupManager;
+        _diagnosticsService = diagnosticsService;
         _serviceProvider = serviceProvider;
     }
 
@@ -88,6 +92,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         // Subscribe to tray events
         _trayIconManager.ShowSettingsRequested += (s, e) => ShowSettingsWindow();
+        _trayIconManager.DiagnosticsRequested += (s, e) => ShowDiagnosticsWindow();
         _trayIconManager.ToggleMuteRequested += (s, e) => ToggleMute();
         _trayIconManager.ToggleEnabledRequested += (s, e) => ToggleEnabled();
         _trayIconManager.ExitRequested += (s, e) => ExitApp();
@@ -124,13 +129,27 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     private void OnKeyPressed(object? sender, KeyPressedEventArgs e)
     {
-        if (!e.IsPressed) return; // Only trigger on key down
+        _diagnosticsService.RecordKeyEvent(e.KeyEvent);
+
+        if (!e.IsPressed)
+        {
+            _diagnosticsService.RecordPlayback(string.Empty, false, "key-up");
+            return; // Only trigger on key down
+        }
 
         var config = _configService.Load();
-        if (!config.IsEnabled || config.IsMuted) return;
+        if (!config.IsEnabled || config.IsMuted)
+        {
+            _diagnosticsService.RecordPlayback(string.Empty, false, !config.IsEnabled ? "app-disabled" : "muted");
+            return;
+        }
 
         var activePack = _soundPackManager.ActivePack;
-        if (activePack == null) return;
+        if (activePack == null)
+        {
+            _diagnosticsService.RecordPlayback(string.Empty, false, "no-active-pack");
+            return;
+        }
 
         // Advance combo
         _comboTracker.RegisterKeyPress();
@@ -139,7 +158,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         // Resolve sound
         var resolvedSoundId = _bindingResolver.ResolveSound(e.KeyCode, activePack, config);
-        if (string.IsNullOrEmpty(resolvedSoundId)) return;
+        _diagnosticsService.RecordResolvedSound(e.KeyCode, resolvedSoundId);
+
+        if (string.IsNullOrEmpty(resolvedSoundId))
+        {
+            _diagnosticsService.RecordPlayback(string.Empty, false, "no-resolved-sound");
+            return;
+        }
 
         // Check if there is a combo variant for this tier
         string finalSoundId = resolvedSoundId;
@@ -162,12 +187,21 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var soundEntry = activePack.GetSound(finalSoundId);
         float volume = soundEntry?.Volume ?? 1.0f;
 
-        if (!_audioEngine.IsSoundLoaded(finalSoundId) && soundEntry != null && File.Exists(soundEntry.File))
+        if (!_audioEngine.IsSoundLoaded(finalSoundId))
         {
-            _audioEngine.LoadSound(finalSoundId, soundEntry.File);
+            if (soundEntry != null && File.Exists(soundEntry.File))
+            {
+                _audioEngine.LoadSound(finalSoundId, soundEntry.File);
+            }
+            else
+            {
+                _diagnosticsService.RecordPlayback(finalSoundId, false, "file-not-found");
+                return;
+            }
         }
 
         _audioEngine.PlayWithPitch(finalSoundId, volume, pitch);
+        _diagnosticsService.RecordPlayback(finalSoundId, true, "ok");
 
         // Visual overlay feedback
         if (config.OverlayEnabled && !config.PerformanceMode)
@@ -289,6 +323,25 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
             _soundPackWindow.Show();
             _soundPackWindow.Activate();
+        });
+    }
+
+    public void ShowDiagnosticsWindow()
+    {
+        Application.Current?.Dispatcher.Invoke(() =>
+        {
+            if (_diagnosticsWindow == null || !_diagnosticsWindow.IsLoaded)
+            {
+                var vm = _serviceProvider.GetRequiredService<DiagnosticsViewModel>();
+                _diagnosticsWindow = new DiagnosticsWindow(vm);
+            }
+
+            _diagnosticsWindow.Show();
+            _diagnosticsWindow.Activate();
+            if (_diagnosticsWindow.WindowState == WindowState.Minimized)
+            {
+                _diagnosticsWindow.WindowState = WindowState.Normal;
+            }
         });
     }
 

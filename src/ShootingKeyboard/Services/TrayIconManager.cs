@@ -15,6 +15,7 @@ public sealed class TrayIconManager : ITrayIconManager
     private bool _disposed = false;
 
     public event EventHandler? ShowSettingsRequested;
+    public event EventHandler? DiagnosticsRequested;
     public event EventHandler? ToggleMuteRequested;
     public event EventHandler? ToggleEnabledRequested;
     public event EventHandler? ExitRequested;
@@ -50,6 +51,10 @@ public sealed class TrayIconManager : ITrayIconManager
         var showSettingsItem = new MenuItem { Header = "Settings & Dashboard" };
         showSettingsItem.Click += (s, e) => ShowSettingsRequested?.Invoke(this, EventArgs.Empty);
         contextMenu.Items.Add(showSettingsItem);
+
+        var showDiagnosticsItem = new MenuItem { Header = "Diagnostics" };
+        showDiagnosticsItem.Click += (s, e) => DiagnosticsRequested?.Invoke(this, EventArgs.Empty);
+        contextMenu.Items.Add(showDiagnosticsItem);
 
         var toggleMuteItem = new MenuItem { Header = "Mute/Unmute Sounds" };
         toggleMuteItem.Click += (s, e) => ToggleMuteRequested?.Invoke(this, EventArgs.Empty);
