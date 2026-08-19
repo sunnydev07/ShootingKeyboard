@@ -10,6 +10,7 @@
       "displayName": "Tactical Switch Click \u0026 Clack",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": false,
       "comboTier": 0
     },
@@ -19,6 +20,7 @@
       "displayName": "Stabilized Spacebar Thock",
       "group": "Space",
       "volume": 1,
+      "variants": [],
       "isComboVariant": false,
       "comboTier": 0
     },
@@ -28,6 +30,7 @@
       "displayName": "Return Key Heavy Clack",
       "group": "Enter",
       "volume": 1,
+      "variants": [],
       "isComboVariant": false,
       "comboTier": 0
     },
@@ -37,6 +40,7 @@
       "displayName": "Linear Gaming Switch Tap",
       "group": "WASD",
       "volume": 0.9,
+      "variants": [],
       "isComboVariant": false,
       "comboTier": 0
     },
@@ -46,6 +50,7 @@
       "displayName": "Fast Typing Rhythm (Tier 1)",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": true,
       "comboTier": 1
     },
@@ -55,6 +60,7 @@
       "displayName": "Rapid Clack Cascade (Tier 2)",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": true,
       "comboTier": 2
     },
@@ -64,6 +70,7 @@
       "displayName": "120 WPM Flurry (Tier 3)",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": true,
       "comboTier": 3
     },
@@ -73,6 +80,7 @@
       "displayName": "Mechanical Symphony (Tier 4)",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": true,
       "comboTier": 4
     }

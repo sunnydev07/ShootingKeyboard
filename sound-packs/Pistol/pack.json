@@ -10,6 +10,7 @@
       "displayName": "9mm Pistol Shot",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": false,
       "comboTier": 0
     },
@@ -19,6 +20,7 @@
       "displayName": ".50 Desert Eagle Hand Cannon",
       "group": "Space",
       "volume": 1,
+      "variants": [],
       "isComboVariant": false,
       "comboTier": 0
     },
@@ -28,6 +30,7 @@
       "displayName": "Tactical Flashbang Breach",
       "group": "Enter",
       "volume": 1,
+      "variants": [],
       "isComboVariant": false,
       "comboTier": 0
     },
@@ -37,6 +40,7 @@
       "displayName": "Suppressed Tactical Tap",
       "group": "WASD",
       "volume": 0.9,
+      "variants": [],
       "isComboVariant": false,
       "comboTier": 0
     },
@@ -46,6 +50,7 @@
       "displayName": "Double Tap (Tier 1)",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": true,
       "comboTier": 1
     },
@@ -55,6 +60,7 @@
       "displayName": "Revolver Fan-Fire (Tier 2)",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": true,
       "comboTier": 2
     },
@@ -64,6 +70,7 @@
       "displayName": "Magnum Rapid Fire (Tier 3)",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": true,
       "comboTier": 3
     },
@@ -73,6 +80,7 @@
       "displayName": "Akimbo Pistol Frenzy (Tier 4)",
       "group": null,
       "volume": 1,
+      "variants": [],
       "isComboVariant": true,
       "comboTier": 4
     }
