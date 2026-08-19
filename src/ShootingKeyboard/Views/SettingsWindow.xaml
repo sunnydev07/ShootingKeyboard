@@ -72,6 +72,52 @@
         <!-- Settings Body -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16">
             <StackPanel>
+                <!-- Profiles Section -->
+                <Border Background="#252A34" CornerRadius="6" Padding="16" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="CONFIG PROFILES" FontWeight="Bold" FontSize="13" Foreground="#B48EAD" Margin="0,0,0,12"/>
+
+                        <!-- Active Profile Selector & Actions -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Select Profile:" VerticalAlignment="Center" FontSize="14"/>
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Profiles}"
+                                      SelectedItem="{Binding SelectedProfile}"
+                                      DisplayMemberPath="Name"
+                                      Height="30"
+                                      Margin="0,0,8,0"/>
+                            <Button Grid.Column="2" Content="Switch To" Command="{Binding ActivateSelectedProfileCommand}" Height="30" Margin="0,0,6,0"/>
+                            <Button Grid.Column="3" Content="Delete" Command="{Binding DeleteSelectedProfileCommand}" Height="30" Background="#BF616A"/>
+                        </Grid>
+
+                        <!-- New Profile Creator -->
+                        <Grid Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="New Profile Name:" VerticalAlignment="Center" FontSize="14"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding NewProfileName, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="30"
+                                     Margin="0,0,8,0"
+                                     Background="#1E222B"
+                                     Foreground="#ECEFF4"
+                                     BorderBrush="#4C566A"
+                                     Padding="6,4"
+                                     VerticalContentAlignment="Center"/>
+                            <Button Grid.Column="2" Content="Create Profile" Command="{Binding CreateProfileCommand}" Height="30" Background="#5E81AC"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
                 <!-- Sound & Pack Controls -->
                 <Border Background="#252A34" CornerRadius="6" Padding="16" Margin="0,0,0,12">
                     <StackPanel>

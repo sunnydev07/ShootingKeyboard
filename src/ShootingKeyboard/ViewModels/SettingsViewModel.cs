@@ -19,6 +19,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly IOverlayManager _overlayManager;
     private readonly IComboTracker _comboTracker;
     private readonly ITrayIconManager _trayIconManager;
+    private readonly IProfileManager _profileManager;
 
     private bool _isLoading;
 
@@ -52,6 +53,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private int _globalCooldownMs;
 
+    [ObservableProperty]
+    private AppProfile? _selectedProfile;
+
+    [ObservableProperty]
+    private string _newProfileName = string.Empty;
+
+    public ObservableCollection<AppProfile> Profiles { get; } = new();
     public ObservableCollection<SoundPack> AvailablePacks { get; } = new();
 
     public event Action? RequestClose;
@@ -66,7 +74,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         IStartupManager startupManager,
         IOverlayManager overlayManager,
         IComboTracker comboTracker,
-        ITrayIconManager trayIconManager)
+        ITrayIconManager trayIconManager,
+        IProfileManager profileManager)
     {
         _configService = configService;
         _soundPackManager = soundPackManager;
@@ -76,6 +85,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _overlayManager = overlayManager;
         _comboTracker = comboTracker;
         _trayIconManager = trayIconManager;
+        _profileManager = profileManager;
 
         LoadFromConfig();
     }
@@ -97,6 +107,14 @@ public sealed partial class SettingsViewModel : ObservableObject
             var filter = config.PlaybackFilter ?? new PlaybackFilterConfig();
             IgnoreKeyRepeats = filter.IgnoreKeyRepeats;
             GlobalCooldownMs = filter.GlobalCooldownMs;
+
+            Profiles.Clear();
+            foreach (var profile in _profileManager.GetProfiles(config))
+            {
+                Profiles.Add(profile);
+            }
+            SelectedProfile = Profiles.FirstOrDefault(p => p.Id.Equals(config.ActiveProfileId, StringComparison.OrdinalIgnoreCase))
+                              ?? Profiles.FirstOrDefault();
 
             AvailablePacks.Clear();
             foreach (var pack in _soundPackManager.GetPacks())
@@ -161,6 +179,70 @@ public sealed partial class SettingsViewModel : ObservableObject
         _comboTracker.ComboWindowMs = config.ComboWindowMs;
         _overlayManager.IsEnabled = config.OverlayEnabled && !config.PerformanceMode;
         _startupManager.SetStartupEnabled(config.StartWithWindows);
+    }
+
+    [RelayCommand]
+    public void CreateProfile()
+    {
+        if (string.IsNullOrWhiteSpace(NewProfileName)) return;
+
+        var config = _configService.Load();
+        _profileManager.CopyRootSettingsToActiveProfile(config);
+        var created = _profileManager.CreateProfile(config, NewProfileName.Trim());
+        _configService.Save(config);
+
+        NewProfileName = string.Empty;
+        LoadFromConfig();
+        SelectedProfile = Profiles.FirstOrDefault(p => p.Id == created.Id);
+        _trayIconManager.ShowNotification("Shooting Keyboard", $"Profile '{created.Name}' created", BalloonIcon.Info);
+    }
+
+    [RelayCommand]
+    public void DeleteSelectedProfile()
+    {
+        if (SelectedProfile == null || Profiles.Count <= 1)
+        {
+            _trayIconManager.ShowNotification("Shooting Keyboard", "Cannot delete the only profile", BalloonIcon.Warning);
+            return;
+        }
+
+        var config = _configService.Load();
+        if (SelectedProfile.Id.Equals(config.ActiveProfileId, StringComparison.OrdinalIgnoreCase))
+        {
+            _trayIconManager.ShowNotification("Shooting Keyboard", "Cannot delete the active profile. Switch to another profile first.", BalloonIcon.Warning);
+            return;
+        }
+
+        var name = SelectedProfile.Name;
+        if (_profileManager.DeleteProfile(config, SelectedProfile.Id))
+        {
+            _configService.Save(config);
+            LoadFromConfig();
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Profile '{name}' deleted", BalloonIcon.Info);
+        }
+    }
+
+    [RelayCommand]
+    public void ActivateSelectedProfile()
+    {
+        if (SelectedProfile == null) return;
+
+        var config = _configService.Load();
+        if (_profileManager.SetActiveProfile(config, SelectedProfile.Id))
+        {
+            _configService.Save(config);
+            LoadFromConfig();
+
+            // Apply runtime changes
+            _audioEngine.SetMasterVolume(config.MasterVolume);
+            _audioEngine.SetMuted(config.IsMuted);
+            _comboTracker.ComboWindowMs = config.ComboWindowMs;
+            _overlayManager.IsEnabled = config.OverlayEnabled && !config.PerformanceMode;
+            _startupManager.SetStartupEnabled(config.StartWithWindows);
+            _soundPackManager.SetActivePack(config.ActivePackId);
+
+            _trayIconManager.ShowNotification("Shooting Keyboard", $"Profile '{SelectedProfile.Name}' activated", BalloonIcon.Info);
+        }
     }
 
     [RelayCommand]

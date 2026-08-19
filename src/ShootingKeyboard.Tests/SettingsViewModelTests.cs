@@ -18,8 +18,10 @@ public class SettingsViewModelTests
     private readonly Mock<IOverlayManager> _overlayManagerMock = new();
     private readonly Mock<IComboTracker> _comboTrackerMock = new();
     private readonly Mock<ITrayIconManager> _trayIconManagerMock = new();
+    private readonly Mock<IProfileManager> _profileManagerMock = new();
 
     private readonly List<SoundPack> _testPacks;
+    private readonly List<AppProfile> _testProfiles;
 
     public SettingsViewModelTests()
     {
@@ -45,7 +47,14 @@ public class SettingsViewModelTests
             }
         };
 
+        _testProfiles = new List<AppProfile>
+        {
+            new AppProfile { Id = "default", Name = "Default", MasterVolume = 0.8f, ActivePackId = "warzone" },
+            new AppProfile { Id = "gaming", Name = "Gaming", MasterVolume = 1.0f, ActivePackId = "scifi" }
+        };
+
         _soundPackManagerMock.Setup(m => m.GetPacks()).Returns(_testPacks);
+        _profileManagerMock.Setup(p => p.GetProfiles(It.IsAny<AppConfig>())).Returns(_testProfiles);
     }
 
     private SettingsViewModel CreateViewModel(AppConfig? config = null)
@@ -60,6 +69,7 @@ public class SettingsViewModelTests
             PerformanceMode = false,
             StartWithWindows = false,
             ComboWindowMs = 450,
+            ActiveProfileId = "default",
             PlaybackFilter = new PlaybackFilterConfig
             {
                 IgnoreKeyRepeats = true,
@@ -77,7 +87,8 @@ public class SettingsViewModelTests
             _startupManagerMock.Object,
             _overlayManagerMock.Object,
             _comboTrackerMock.Object,
-            _trayIconManagerMock.Object);
+            _trayIconManagerMock.Object,
+            _profileManagerMock.Object);
     }
 
     [Fact]
@@ -97,6 +108,61 @@ public class SettingsViewModelTests
         Assert.Equal(2, vm.AvailablePacks.Count);
         Assert.NotNull(vm.SelectedPack);
         Assert.Equal("warzone", vm.SelectedPack.Id);
+        Assert.Equal(2, vm.Profiles.Count);
+        Assert.NotNull(vm.SelectedProfile);
+        Assert.Equal("default", vm.SelectedProfile.Id);
+    }
+
+    [Fact]
+    public void CreateProfile_WhenNameProvided_CreatesProfileAndReloads()
+    {
+        var vm = CreateViewModel();
+        vm.NewProfileName = "Streaming";
+
+        var newProf = new AppProfile { Id = "profile_stream", Name = "Streaming" };
+        _profileManagerMock.Setup(p => p.CreateProfile(It.IsAny<AppConfig>(), "Streaming")).Returns(newProf);
+
+        vm.CreateProfileCommand.Execute(null);
+
+        _profileManagerMock.Verify(p => p.CopyRootSettingsToActiveProfile(It.IsAny<AppConfig>()), Times.Once);
+        _profileManagerMock.Verify(p => p.CreateProfile(It.IsAny<AppConfig>(), "Streaming"), Times.Once);
+        _configServiceMock.Verify(c => c.Save(It.IsAny<AppConfig>()), Times.Once);
+        Assert.Equal(string.Empty, vm.NewProfileName);
+    }
+
+    [Fact]
+    public void ActivateProfile_UpdatesActiveProfileAndAppliesRuntime()
+    {
+        var vm = CreateViewModel();
+        vm.SelectedProfile = _testProfiles[1]; // gaming
+
+        _profileManagerMock.Setup(p => p.SetActiveProfile(It.IsAny<AppConfig>(), "gaming"))
+            .Callback<AppConfig, string>((cfg, id) =>
+            {
+                cfg.ActiveProfileId = "gaming";
+                cfg.MasterVolume = 1.0f;
+                cfg.ActivePackId = "scifi";
+            })
+            .Returns(true);
+
+        vm.ActivateSelectedProfileCommand.Execute(null);
+
+        _profileManagerMock.Verify(p => p.SetActiveProfile(It.IsAny<AppConfig>(), "gaming"), Times.Once);
+        _configServiceMock.Verify(c => c.Save(It.IsAny<AppConfig>()), Times.Once);
+        _audioEngineMock.Verify(a => a.SetMasterVolume(1.0f), Times.AtLeastOnce());
+        _soundPackManagerMock.Verify(s => s.SetActivePack("scifi"), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public void DeleteProfile_ActiveProfile_ShowsWarningWithoutDeleting()
+    {
+        var vm = CreateViewModel();
+        vm.SelectedProfile = _testProfiles[0]; // "default" which is active
+
+        vm.DeleteSelectedProfileCommand.Execute(null);
+
+        _profileManagerMock.Verify(p => p.DeleteProfile(It.IsAny<AppConfig>(), It.IsAny<string>()), Times.Never);
+        _trayIconManagerMock.Verify(t => t.ShowNotification("Shooting Keyboard", It.Is<string>(s => s.Contains("Cannot delete")), BalloonIcon.Warning), Times.Once);
     }
 
     [Fact]
