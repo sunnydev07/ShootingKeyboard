@@ -21,6 +21,7 @@ public class MainViewModelTests
     private readonly Mock<ITrayIconManager> _trayIconManagerMock = new();
     private readonly Mock<IStartupManager> _startupManagerMock = new();
     private readonly Mock<IRuntimeDiagnosticsService> _diagnosticsServiceMock = new();
+    private readonly Mock<IKeyPressFilter> _keyPressFilterMock = new();
     private readonly Mock<IServiceProvider> _serviceProviderMock = new();
 
     private readonly SoundPack _testPack;
@@ -41,6 +42,9 @@ public class MainViewModelTests
         _soundPackManagerMock.Setup(m => m.GetPacks()).Returns(new List<SoundPack> { _testPack });
         _soundPackManagerMock.SetupGet(m => m.ActivePack).Returns(_testPack);
         _soundPackManagerMock.Setup(m => m.GetPack("warzone")).Returns(_testPack);
+
+        _keyPressFilterMock.Setup(f => f.ShouldProcess(It.Is<KeyEvent>(k => k.IsPressed), It.IsAny<AppConfig>())).Returns(true);
+        _keyPressFilterMock.Setup(f => f.ShouldProcess(It.Is<KeyEvent>(k => !k.IsPressed), It.IsAny<AppConfig>())).Returns(false);
     }
 
     private MainViewModel CreateViewModel(AppConfig? config = null)
@@ -69,6 +73,7 @@ public class MainViewModelTests
             _trayIconManagerMock.Object,
             _startupManagerMock.Object,
             _diagnosticsServiceMock.Object,
+            _keyPressFilterMock.Object,
             _serviceProviderMock.Object);
     }
 
@@ -137,6 +142,23 @@ public class MainViewModelTests
         _audioEngineMock.Verify(a => a.PlayWithPitch(It.IsAny<string>(), It.IsAny<float>(), It.IsAny<float>()), Times.Never);
         _diagnosticsServiceMock.Verify(d => d.RecordKeyEvent(It.Is<KeyEvent>(k => k.KeyCode == 0x41 && !k.IsPressed)), Times.Once);
         _diagnosticsServiceMock.Verify(d => d.RecordPlayback(string.Empty, false, "key-up"), Times.Once);
+    }
+
+    [Fact]
+    public void OnKeyPressed_WhenFilteredByKeyPressFilter_IgnoredAndRecordedInDiagnostics()
+    {
+        var vm = CreateViewModel();
+        vm.Initialize();
+
+        _keyPressFilterMock.Setup(f => f.ShouldProcess(It.IsAny<KeyEvent>(), It.IsAny<AppConfig>())).Returns(false);
+
+        // Act - simulate pressing 'A'
+        _keyboardHookMock.Raise(k => k.KeyPressed += null, new KeyPressedEventArgs(new KeyEvent(0x41, true)));
+
+        // Assert
+        _comboTrackerMock.Verify(c => c.RegisterKeyPress(), Times.Never);
+        _audioEngineMock.Verify(a => a.PlayWithPitch(It.IsAny<string>(), It.IsAny<float>(), It.IsAny<float>()), Times.Never);
+        _diagnosticsServiceMock.Verify(d => d.RecordPlayback(string.Empty, false, "filtered"), Times.Once);
     }
 
     [Fact]

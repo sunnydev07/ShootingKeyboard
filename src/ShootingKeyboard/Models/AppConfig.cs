@@ -69,6 +69,12 @@ public sealed class AppConfig
     public Dictionary<string, string> GroupBindings { get; set; } = new();
 
     /// <summary>
+    /// Keystroke playback filtering and repeat cooldown settings
+    /// </summary>
+    [JsonPropertyName("playbackFilter")]
+    public PlaybackFilterConfig PlaybackFilter { get; set; } = new();
+
+    /// <summary>
     /// Creates a default configuration
     /// </summary>
     public static AppConfig CreateDefault() => new();
@@ -80,6 +86,47 @@ public sealed class AppConfig
     {
         MasterVolume = Math.Clamp(MasterVolume, 0f, 1f);
         ComboWindowMs = Math.Clamp(ComboWindowMs, 50, 2000);
+
+        if (PlaybackFilter != null)
+        {
+            PlaybackFilter.GlobalCooldownMs = Math.Clamp(PlaybackFilter.GlobalCooldownMs, 0, 1000);
+
+            if (PlaybackFilter.GroupCooldownMs != null)
+            {
+                var invalidKeys = PlaybackFilter.GroupCooldownMs.Keys
+                    .Where(k => !KeyGroups.All.Contains(k))
+                    .ToList();
+                foreach (var k in invalidKeys)
+                {
+                    PlaybackFilter.GroupCooldownMs.Remove(k);
+                }
+
+                foreach (var (k, v) in PlaybackFilter.GroupCooldownMs.ToList())
+                {
+                    PlaybackFilter.GroupCooldownMs[k] = Math.Clamp(v, 0, 5000);
+                }
+            }
+            else
+            {
+                PlaybackFilter.GroupCooldownMs = new();
+            }
+
+            if (PlaybackFilter.KeyCooldownMs != null)
+            {
+                foreach (var (k, v) in PlaybackFilter.KeyCooldownMs.ToList())
+                {
+                    PlaybackFilter.KeyCooldownMs[k] = Math.Clamp(v, 0, 5000);
+                }
+            }
+            else
+            {
+                PlaybackFilter.KeyCooldownMs = new();
+            }
+        }
+        else
+        {
+            PlaybackFilter = new();
+        }
     }
 }
 

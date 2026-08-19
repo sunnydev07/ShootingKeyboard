@@ -51,6 +51,7 @@ public partial class App : Application
         services.AddSingleton<IBindingResolver, BindingResolver>();
         services.AddSingleton<ISoundPackValidator, SoundPackValidator>();
         services.AddSingleton<IRuntimeDiagnosticsService, RuntimeDiagnosticsService>();
+        services.AddSingleton<IKeyPressFilter, KeyPressFilter>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

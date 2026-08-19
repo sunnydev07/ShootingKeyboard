@@ -23,6 +23,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly ITrayIconManager _trayIconManager;
     private readonly IStartupManager _startupManager;
     private readonly IRuntimeDiagnosticsService _diagnosticsService;
+    private readonly IKeyPressFilter _keyPressFilter;
     private readonly IServiceProvider _serviceProvider;
 
     private SettingsWindow? _settingsWindow;
@@ -42,6 +43,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ITrayIconManager trayIconManager,
         IStartupManager startupManager,
         IRuntimeDiagnosticsService diagnosticsService,
+        IKeyPressFilter keyPressFilter,
         IServiceProvider serviceProvider)
     {
         _configService = configService;
@@ -54,6 +56,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _trayIconManager = trayIconManager;
         _startupManager = startupManager;
         _diagnosticsService = diagnosticsService;
+        _keyPressFilter = keyPressFilter;
         _serviceProvider = serviceProvider;
     }
 
@@ -131,13 +134,21 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         _diagnosticsService.RecordKeyEvent(e.KeyEvent);
 
-        if (!e.IsPressed)
+        var config = _configService.Load();
+
+        if (!_keyPressFilter.ShouldProcess(e.KeyEvent, config))
         {
-            _diagnosticsService.RecordPlayback(string.Empty, false, "key-up");
-            return; // Only trigger on key down
+            if (!e.IsPressed)
+            {
+                _diagnosticsService.RecordPlayback(string.Empty, false, "key-up");
+            }
+            else
+            {
+                _diagnosticsService.RecordPlayback(string.Empty, false, "filtered");
+            }
+            return;
         }
 
-        var config = _configService.Load();
         if (!config.IsEnabled || config.IsMuted)
         {
             _diagnosticsService.RecordPlayback(string.Empty, false, !config.IsEnabled ? "app-disabled" : "muted");
@@ -269,6 +280,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         {
             _keyboardHook.Stop();
             _comboTracker.Reset();
+            _keyPressFilter.Reset();
         }
 
         UpdateTrayTooltip();
